@@ -223,6 +223,8 @@ class GCSStorageProvider(StorageProvider):
             filename = file_path.removeprefix("gs://").split("/")[1]
             local_file_path = f"{UPLOAD_DIR}/{filename}"
             blob = self.bucket.get_blob(filename)
+            if blob is None:
+                raise NotFound("Blob not found")
             blob.download_to_filename(local_file_path)
 
             return local_file_path
@@ -234,6 +236,8 @@ class GCSStorageProvider(StorageProvider):
         try:
             filename = file_path.removeprefix("gs://").split("/")[1]
             blob = self.bucket.get_blob(filename)
+            if blob is None:
+                raise NotFound("Blob not found")
             blob.delete()
         except NotFound as e:
             raise RuntimeError(f"Error deleting file from GCS: {e}")
