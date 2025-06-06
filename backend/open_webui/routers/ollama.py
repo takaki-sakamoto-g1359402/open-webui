@@ -110,17 +110,11 @@ async def send_post_request(
 
     r = None
     try:
-        stack = AsyncExitStack()
-        await stack.__aenter__()
-        session = await stack.enter_async_context(
-            aiohttp.ClientSession(
-                trust_env=True,
-                timeout=aiohttp.ClientTimeout(total=AIOHTTP_CLIENT_TIMEOUT),
-            )
-        )
-
-        r = await stack.enter_async_context(
-            session.post(
+        async with aiohttp.ClientSession(
+            trust_env=True,
+            timeout=aiohttp.ClientTimeout(total=AIOHTTP_CLIENT_TIMEOUT),
+        ) as session:
+            async with session.post(
                 url,
                 data=payload,
                 headers={
@@ -137,32 +131,26 @@ async def send_post_request(
                         else {}
                     ),
                 },
-            )
-        )
-        r.raise_for_status()
+            ) as r:
+                r.raise_for_status()
 
-        if stream:
-            response_headers = dict(r.headers)
+                if stream:
+                    response_headers = dict(r.headers)
 
-            if content_type:
-                response_headers["Content-Type"] = content_type
+                    if content_type:
+                        response_headers["Content-Type"] = content_type
 
-            async def iterator():
-                try:
-                    async for chunk in r.content:
-                        yield chunk
-                finally:
-                    await stack.aclose()
+                    async def iterator():
+                        async for chunk in r.content:
+                            yield chunk
 
-            return StreamingResponse(
-                iterator(),
-                status_code=r.status,
-                headers=response_headers,
-            )
-        else:
-            res = await r.json()
-            await stack.aclose()
-            return res
+                    return StreamingResponse(
+                        iterator(),
+                        status_code=r.status,
+                        headers=response_headers,
+                    )
+                else:
+                    return await r.json()
 
     except Exception as e:
         detail = None
