@@ -99,16 +99,6 @@ async def send_get_request(url, key=None, user: UserModel = None):
         return None
 
 
-async def cleanup_response(
-    response: Optional[aiohttp.ClientResponse],
-    session: Optional[aiohttp.ClientSession],
-):
-    if response:
-        response.close()
-    if session:
-        await session.close()
-
-
 async def send_post_request(
     url: str,
     payload: Union[str, bytes],
@@ -120,27 +110,34 @@ async def send_post_request(
 
     r = None
     try:
-        session = aiohttp.ClientSession(
-            trust_env=True, timeout=aiohttp.ClientTimeout(total=AIOHTTP_CLIENT_TIMEOUT)
+        stack = AsyncExitStack()
+        await stack.__aenter__()
+        session = await stack.enter_async_context(
+            aiohttp.ClientSession(
+                trust_env=True,
+                timeout=aiohttp.ClientTimeout(total=AIOHTTP_CLIENT_TIMEOUT),
+            )
         )
 
-        r = await session.post(
-            url,
-            data=payload,
-            headers={
-                "Content-Type": "application/json",
-                **({"Authorization": f"Bearer {key}"} if key else {}),
-                **(
-                    {
-                        "X-OpenWebUI-User-Name": user.name,
-                        "X-OpenWebUI-User-Id": user.id,
-                        "X-OpenWebUI-User-Email": user.email,
-                        "X-OpenWebUI-User-Role": user.role,
-                    }
-                    if ENABLE_FORWARD_USER_INFO_HEADERS and user
-                    else {}
-                ),
-            },
+        r = await stack.enter_async_context(
+            session.post(
+                url,
+                data=payload,
+                headers={
+                    "Content-Type": "application/json",
+                    **({"Authorization": f"Bearer {key}"} if key else {}),
+                    **(
+                        {
+                            "X-OpenWebUI-User-Name": user.name,
+                            "X-OpenWebUI-User-Id": user.id,
+                            "X-OpenWebUI-User-Email": user.email,
+                            "X-OpenWebUI-User-Role": user.role,
+                        }
+                        if ENABLE_FORWARD_USER_INFO_HEADERS and user
+                        else {}
+                    ),
+                },
+            )
         )
         r.raise_for_status()
 
@@ -150,17 +147,21 @@ async def send_post_request(
             if content_type:
                 response_headers["Content-Type"] = content_type
 
+            async def iterator():
+                try:
+                    async for chunk in r.content:
+                        yield chunk
+                finally:
+                    await stack.aclose()
+
             return StreamingResponse(
-                r.content,
+                iterator(),
                 status_code=r.status,
                 headers=response_headers,
-                background=BackgroundTask(
-                    cleanup_response, response=r, session=session
-                ),
             )
         else:
             res = await r.json()
-            await cleanup_response(r, session)
+            await stack.aclose()
             return res
 
     except Exception as e:
