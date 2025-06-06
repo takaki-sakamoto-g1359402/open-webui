@@ -61,7 +61,7 @@ class TestLocalStorageProvider:
     file_content = b"test content"
     file_bytesio = io.BytesIO(file_content)
     filename = "test.txt"
-    filename_extra = "test_exyta.txt"
+    filename_extra = "test_extra.txt"
     file_bytesio_empty = io.BytesIO()
 
     def test_upload_file(self, monkeypatch, tmp_path):
@@ -106,7 +106,7 @@ class TestS3StorageProvider:
         self.s3_client = boto3.resource("s3", region_name="us-east-1")
         self.file_content = b"test content"
         self.filename = "test.txt"
-        self.filename_extra = "test_exyta.txt"
+        self.filename_extra = "test_extra.txt"
         self.file_bytesio_empty = io.BytesIO()
         super().__init__()
 
@@ -204,7 +204,7 @@ class TestGCSStorageProvider:
     Storage.bucket_name = "my-bucket"
     file_content = b"test content"
     filename = "test.txt"
-    filename_extra = "test_exyta.txt"
+    filename_extra = "test_extra.txt"
     file_bytesio_empty = io.BytesIO()
 
     @pytest.fixture(scope="class")
