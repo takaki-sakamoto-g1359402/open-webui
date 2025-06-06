@@ -154,7 +154,7 @@ class TestAuths(AbstractPostgresTest):
             "email": "john.doe@openwebui.com",
         }
 
-    def test_create_api_key_(self):
+    def test_create_api_key(self):
         user = self.auths.insert_new_auth(
             email="john.doe@openwebui.com",
             password="password",
