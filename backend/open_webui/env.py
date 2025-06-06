@@ -258,7 +258,7 @@ if FROM_INIT_PY:
 if os.path.exists(f"{DATA_DIR}/ollama.db"):
     # Rename the file
     os.rename(f"{DATA_DIR}/ollama.db", f"{DATA_DIR}/webui.db")
-    log.info("Database migrated from Ollama-WebUI successfully.")
+    log.info("Database migrated from Open-WebUI successfully.")
 else:
     pass
 
