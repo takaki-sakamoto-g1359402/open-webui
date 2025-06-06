@@ -1,5 +1,5 @@
 #!/bin/bash
-# update_llm.sh
+# update_ollama_models.sh
 
 # Retrieves the list of LLMs installed in the Docker container
 llm_list=$(docker exec ollama ollama list | tail -n +2 | awk '{print $1}')
