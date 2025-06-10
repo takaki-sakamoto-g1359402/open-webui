@@ -204,6 +204,25 @@ export HF_HUB_OFFLINE=1
 
 Discover upcoming features on our roadmap in the [Open WebUI Documentation](https://docs.openwebui.com/roadmap/).
 
+## Backend API
+
+This repository includes a prototype FastAPI backend located in `new_project/backend`.
+Run it with:
+
+```bash
+uvicorn new_project.backend.main:app --reload
+```
+
+The API provides endpoints for authentication, profiles, invites, chat, and more. See `docs/openapi_schema.json` for the OpenAPI schema.
+
+Legacy DOA-Comms paths were consolidated as follows:
+
+| Old Path | New Path |
+| -------- | -------- |
+| `/auths/signup` | `/auth/register` |
+| `/auths/login` | `/auth/login` |
+| `/users/profile` | `/profiles/{user_id}` |
+
 ## License 📜
 
 This project is licensed under the [BSD-3-Clause License](LICENSE) - see the [LICENSE](LICENSE) file for details. 📄
