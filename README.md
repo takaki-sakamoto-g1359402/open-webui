@@ -200,6 +200,14 @@ If you are running Open WebUI in an offline environment, you can set the `HF_HUB
 export HF_HUB_OFFLINE=1
 ```
 
+### Node.js/Python Environment
+
+Lint やテストを実行するには、Node.js と Python の依存パッケージが必要です。
+最小構成の環境やオフライン環境ではこれらがインストールされておらず、
+`npm run lint` や `npm run test:frontend` が失敗する場合があります。
+`npm install` と `pip install -r requirements.txt` を実行するか、
+インターネット接続を許可してパッケージを取得してください。
+
 ## What's Next? 🌟
 
 Discover upcoming features on our roadmap in the [Open WebUI Documentation](https://docs.openwebui.com/roadmap/).
