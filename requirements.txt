@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+pydantic
+langchain
+openai
+faiss-cpu
+numpy
+gymnasium
+stable-baselines3
+deap
+bullet
+orjson
