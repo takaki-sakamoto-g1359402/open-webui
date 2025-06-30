@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>〇×クイズ生成</title>
+</head>
+<body>
+    <h1>〇×クイズ自動生成</h1>
+    {% if error %}
+    <p style="color: red;">{{ error }}</p>
+    {% endif %}
+    <form action="/" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".pdf,.docx,.pptx" required>
+        <button type="submit">アップロード</button>
+    </form>
+    {% if quiz %}
+    <h2>生成されたクイズ</h2>
+    <pre>{{ quiz }}</pre>
+    {% endif %}
+</body>
+</html>
