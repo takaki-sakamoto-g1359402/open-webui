@@ -92,5 +92,32 @@ def dev(
     )
 
 
+@app.command()
+def ai_ceo(config_path: str):
+    """Run a simple AI CEO workflow using a YAML config."""
+    from .ai_ceo import (
+        load_config,
+        generate_strategy,
+        Investment,
+        evaluate_investment,
+        apply_rules,
+        generate_prompt,
+    )
+
+    cfg = load_config(config_path)
+
+    strategy = generate_strategy(cfg.goals, cfg.horizons)
+
+    score = 0.0
+    if cfg.sample_investment:
+        score = evaluate_investment(cfg.sample_investment, cfg.investment_weights)
+
+    context = {"strategy": strategy, "score": score}
+    apply_rules(context, cfg.rules)
+
+    prompt = generate_prompt(cfg.prompt_template, context)
+    print(prompt)
+
+
 if __name__ == "__main__":
     app()
