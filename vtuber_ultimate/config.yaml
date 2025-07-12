@@ -1,0 +1,4 @@
+# API keys and character configuration
+openai_api_key: "${OPENAI_API_KEY}"
+eleven_api_key: "${ELEVEN_API_KEY}"
+obs_password: "${OBS_PASSWORD}"
