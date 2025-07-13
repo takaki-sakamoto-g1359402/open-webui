@@ -10,3 +10,9 @@ stable-baselines3
 deap
 bullet
 orjson
+transformers
+torch
+pandas
+pydub
+websockets
+obs-websocket-py
