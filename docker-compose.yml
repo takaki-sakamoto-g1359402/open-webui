@@ -1,0 +1,22 @@
+version: '3'
+services:
+  api:
+    build: .
+    command: python AIAI_P/server.py
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+  gui:
+    build: .
+    command: streamlit run AIAI_P/app.py --server.port 8501
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data:/app/data
+  worker:
+    build: .
+    command: python AIAI_P/scheduler.py
+    restart: always
+    volumes:
+      - ./data:/app/data

@@ -1,0 +1,12 @@
+{
+  "schema_version": "v1",
+  "name_for_model": "aiai_p",
+  "description_for_model": "Generate innovation roadmaps via AIAI-P",
+  "api": {
+    "type": "openapi",
+    "url": "http://localhost:8000/openapi.json"
+  },
+  "auth": {
+    "type": "none"
+  }
+}

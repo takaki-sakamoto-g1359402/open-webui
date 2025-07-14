@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r AIAI_P/requirements.txt pytest mypy ruff
+      - name: Run ruff
+        run: ruff AIAI_P
+      - name: Run mypy
+        run: mypy --ignore-missing-imports --strict AIAI_P
+      - name: Run tests
+        run: pytest AIAI_P/tests
