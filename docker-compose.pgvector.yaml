@@ -1,0 +1,10 @@
+version: '3'
+services:
+  postgres:
+    image: ankane/pgvector:latest
+    environment:
+      - POSTGRES_USER=agent
+      - POSTGRES_PASSWORD=agent
+      - POSTGRES_DB=agentdb
+    ports:
+      - "5432:5432"
