@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "innovator-agent"
+version = "0.1.0"
+description = "P0 Innovator Agent for sorting colored blocks"
+authors = ["OpenAI Codex"]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pybullet = "^3.2.5"
+openai = "^1.14.0"
+numpy = "^1.26.4"
+torch = {version="^2.1.2", optional=true}
+timm = {version="^0.9.12", optional=true}
+Pillow = "^10.0"
+
+[tool.poetry.extras]
+vision = ["torch", "timm"]
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.1"
+coverage = "^7.4.4"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
