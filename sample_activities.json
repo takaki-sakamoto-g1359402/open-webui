@@ -1,0 +1,11 @@
+[
+  {"id": "A1", "text": "Please verify your account by clicking http://fake.com", "label": "phishing"},
+  {"id": "A2", "text": "Lunch at noon?", "label": "benign"},
+  {"id": "A3", "text": "Update your password immediately", "label": "phishing"},
+  {"id": "A4", "text": "Meeting schedule attached", "label": "benign"},
+  {"id": "A5", "text": "Your bank account is suspended", "label": "phishing"},
+  {"id": "A6", "text": "Happy birthday!", "label": "benign"},
+  {"id": "A7", "text": "Click here to claim prize", "label": "phishing"},
+  {"id": "A8", "text": "Project report due", "label": "benign"},
+  {"id": "A9", "text": "Login to confirm your payment", "label": "phishing"}
+]
