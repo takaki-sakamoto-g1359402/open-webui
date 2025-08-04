@@ -4,3 +4,7 @@ tqdm
 rich
 aiohttp
 pytest
+langchain==0.2.*
+langgraph
+web3
+pandas

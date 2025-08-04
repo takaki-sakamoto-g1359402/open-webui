@@ -226,3 +226,16 @@ If you have any questions, suggestions, or need assistance, please open an issue
 ---
 
 Created by [Timothy Jaeryang Baek](https://github.com/tjbck) - Let's make Open WebUI even more amazing together! 💪
+
+## Genesis DAO MVP
+
+Minimal prototype for an autonomous NVIDIA × DAO concept.
+
+### Quickstart
+```bash
+npm i
+npx hardhat node &
+python -m venv venv && . venv/bin/activate
+pip install -r requirements.txt
+python agents/treasury_agent.py
+```
