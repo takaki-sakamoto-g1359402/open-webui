@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ai-daobot
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dao-agents
+  namespace: ai-daobot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dao-agents
+  template:
+    metadata:
+      labels:
+        app: dao-agents
+    spec:
+      containers:
+        - name: treasury
+          image: python:3.11
+          command: ["python", "agents/treasury_agent.py"]
+        - name: governance
+          image: python:3.11
+          command: ["python", "agents/governance_agent.py"]
+        - name: devops
+          image: python:3.11
+          command: ["python", "agents/devops_agent.py"]
