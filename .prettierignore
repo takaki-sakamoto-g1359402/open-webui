@@ -1,3 +1,6 @@
+# ignore educational examples (keeps frontend format check clean)
+examples/**
+
 # Ignore files for PNPM, NPM and YARN
 pnpm-lock.yaml
 package-lock.json
