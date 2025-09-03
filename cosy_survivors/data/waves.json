@@ -1,0 +1,5 @@
+[
+  {"t": 10, "enemy_id": "slime", "count": 8, "interval": 0.6},
+  {"t": 30, "enemy_id": "bat", "count": 12, "interval": 0.5},
+  {"t": 60, "enemy_id": "ogre", "count": 1, "interval": 0.0, "boss": true}
+]

@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=4]
+
+[ext_resource type="Script" path="res://scripts/ui/Joystick.gd" id=1]
+
+[node name="Joystick" type="Control"]
+script = ExtResource(1)
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 16
+offset_top = -128
+offset_bottom = -16
