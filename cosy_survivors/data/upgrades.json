@@ -1,0 +1,7 @@
+[
+  {"id":"move_spd","type":"stat","value":0.1,"max_stack":5,"exclusive":false,"weight":10},
+  {"id":"area","type":"stat","value":0.15,"max_stack":5,"exclusive":false,"weight":8},
+  {"id":"cd_red","type":"stat","value":0.1,"max_stack":5,"exclusive":false,"weight":8},
+  {"id":"magnet","type":"stat","value":48,"max_stack":4,"exclusive":false,"weight":6},
+  {"id":"lucky","type":"stat","value":0.1,"max_stack":3,"exclusive":false,"weight":4}
+]

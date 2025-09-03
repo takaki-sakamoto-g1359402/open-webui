@@ -1,0 +1,7 @@
+{
+  "spin":  {"dps": 20, "cooldown": 0.5, "radius": 64},
+  "beam":  {"dps": 35, "cooldown": 1.2, "width": 24},
+  "shot":  {"dps": 28, "cooldown": 0.8, "pellets": 5},
+  "boomer":{"dps": 22, "cooldown": 0.9, "range": 280},
+  "mine":  {"dps": 50, "cooldown": 2.5, "arm_time": 0.8}
+}

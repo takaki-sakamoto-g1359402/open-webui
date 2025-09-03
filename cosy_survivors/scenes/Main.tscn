@@ -1,0 +1,37 @@
+[gd_scene load_steps=9 format=4]
+
+[ext_resource type="PackedScene" path="res://scenes/Player.tscn" id=1]
+[ext_resource type="Script" path="res://scripts/spawner.gd" id=2]
+[ext_resource type="PackedScene" path="res://scenes/UI/HUD.tscn" id=3]
+[ext_resource type="PackedScene" path="res://scenes/UI/Menus.tscn" id=4]
+[ext_resource type="PackedScene" path="res://scenes/UI/Joystick.tscn" id=5]
+[ext_resource type="Script" path="res://scripts/pool/EnemyPool.gd" id=6]
+[ext_resource type="Script" path="res://scripts/pool/ProjectilePool.gd" id=7]
+
+[node name="Main" type="Node2D"]
+
+[node name="Player" parent="." instance=ExtResource(1)]
+
+[node name="Enemies" type="Node2D" parent="."]
+
+[node name="Projectiles" type="Node2D" parent="."]
+
+[node name="Pickups" type="Node2D" parent="."]
+
+[node name="EnemyPool" type="Node" parent="." script=ExtResource(6)]
+
+[node name="ProjectilePool" type="Node" parent="." script=ExtResource(7)]
+
+[node name="Spawner" type="Node" parent="." script=ExtResource(2)]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="HUD" parent="CanvasLayer" instance=ExtResource(3)]
+
+[node name="Menus" parent="CanvasLayer" instance=ExtResource(4)]
+
+[node name="JoystickLayer" type="CanvasLayer" parent="."]
+
+[node name="Joystick" parent="JoystickLayer" instance=ExtResource(5)]
+
+[connection signal="moved" from="JoystickLayer/Joystick" to="Player" method="_on_joystick_moved"]

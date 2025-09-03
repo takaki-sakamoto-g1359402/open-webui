@@ -1,0 +1,19 @@
+[application]
+config/name="Cosy Survivors"
+run/main_scene="res://scenes/Main.tscn"
+
+[autoload]
+Globals="*res://autoload/Globals.gd"
+
+[display]
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="viewport"
+window/stretch/aspect="expand"
+
+[input]
+move_up=["Key.W"]
+move_down=["Key.S"]
+move_left=["Key.A"]
+move_right=["Key.D"]
+pause=["Key.P"]
