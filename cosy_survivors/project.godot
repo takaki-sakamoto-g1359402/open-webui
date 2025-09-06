@@ -1,0 +1,25 @@
+; Engine configuration file (Godot 4.3)
+config_version=5
+
+[application]
+config/name="Cosy Survivors"
+run/main_scene="res://scenes/Main.tscn"
+
+[autoload]
+Globals="*res://autoload/Globals.gd"
+
+[display]
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[input]
+move_left={ "deadzone": 0.5, "events": [ { "type": "KEY", "physical_keycode": 65 } ] }   # A
+move_right={ "deadzone": 0.5, "events": [ { "type": "KEY", "physical_keycode": 68 } ] }  # D
+move_up={ "deadzone": 0.5, "events": [ { "type": "KEY", "physical_keycode": 87 } ] }     # W
+move_down={ "deadzone": 0.5, "events": [ { "type": "KEY", "physical_keycode": 83 } ] }   # S
+pause={ "events": [ { "type": "KEY", "physical_keycode": 80 } ] }                        # P
+
+[rendering]
+renderer/rendering_method="mobile"

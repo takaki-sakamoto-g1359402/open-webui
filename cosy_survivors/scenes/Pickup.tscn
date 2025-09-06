@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=4]
+
+[sub_resource type="CircleShape2D" id=1]
+radius = 6.0
+
+[sub_resource type="GDScript" id=2]
+source_code = "extends Node2D\nfunc _ready():\n    update()\nfunc _draw():\n    draw_circle(Vector2.ZERO,6,Color(0,0,1))\n"
+
+[node name="Pickup" type="Area2D"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource(1)
+
+[node name="Visual" type="Node2D" parent="."]
+script = SubResource(2)
