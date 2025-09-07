@@ -1,0 +1,12 @@
+pandas
+numpy
+networkx
+matplotlib
+openai
+streamlit
+schedule
+fastapi
+uvicorn
+weaviate-client
+faiss-cpu
+redis

@@ -1,0 +1,100 @@
+from __future__ import annotations
+
+import os
+import sqlite3
+from pathlib import Path
+from typing import Tuple
+
+DATA_DIR = Path(os.getenv("XDG_DATA_HOME", "~/.local/share")).expanduser() / "aiai_p"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+DB_PATH = DATA_DIR / "history.db"
+
+
+def init_db() -> None:
+    conn = sqlite3.connect(str(DB_PATH), check_same_thread=False)
+    with conn:
+        conn.execute(
+            """CREATE TABLE IF NOT EXISTS history(
+            partner_a TEXT,
+            partner_b TEXT,
+            result TEXT,
+            ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )"""
+        )
+    conn.close()
+
+
+def log_history(a: str, b: str, result: str) -> None:
+    conn = sqlite3.connect(str(DB_PATH), check_same_thread=False)
+    with conn:
+        conn.execute(
+            "INSERT INTO history(partner_a, partner_b, result) VALUES (?,?,?)",
+            (a, b, result),
+        )
+    conn.close()
+
+
+def get_partner_weight(name: str) -> float:
+    conn = sqlite3.connect(str(DB_PATH), check_same_thread=False)
+    cur = conn.cursor()
+    cur.execute(
+        (
+            "SELECT COUNT(*) FROM history WHERE (partner_a=? OR partner_b=?) "
+            "AND result='success'"
+        ),
+        (name, name),
+    )
+    success = int(cur.fetchone()[0])
+    cur.execute(
+        (
+            "SELECT COUNT(*) FROM history WHERE (partner_a=? OR partner_b=?) "
+            "AND result='fail'"
+        ),
+        (name, name),
+    )
+    fail = int(cur.fetchone()[0])
+    conn.close()
+    return max(0.1, 1 + 0.1 * (success - fail))
+
+
+def get_stats() -> Tuple[int, int]:
+    conn = sqlite3.connect(str(DB_PATH), check_same_thread=False)
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(*) FROM history WHERE result='success'")
+    success = int(cur.fetchone()[0])
+    cur.execute("SELECT COUNT(*) FROM history WHERE result='fail'")
+    fail = int(cur.fetchone()[0])
+    conn.close()
+    return success, fail
+
+
+def pair_stats(name: str) -> Tuple[int, int]:
+    conn = sqlite3.connect(str(DB_PATH), check_same_thread=False)
+    cur = conn.cursor()
+    cur.execute(
+        (
+            "SELECT COUNT(*) FROM history WHERE (partner_a=? OR partner_b=?) "
+            "AND result='success'"
+        ),
+        (name, name),
+    )
+    s = int(cur.fetchone()[0])
+    cur.execute(
+        (
+            "SELECT COUNT(*) FROM history WHERE (partner_a=? OR partner_b=?) "
+            "AND result='fail'"
+        ),
+        (name, name),
+    )
+    f = int(cur.fetchone()[0])
+    conn.close()
+    return s, f
+
+
+def total_history() -> int:
+    conn = sqlite3.connect(str(DB_PATH), check_same_thread=False)
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(*) FROM history")
+    n = int(cur.fetchone()[0])
+    conn.close()
+    return n
