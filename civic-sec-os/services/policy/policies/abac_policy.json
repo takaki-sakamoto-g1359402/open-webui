@@ -1,0 +1,53 @@
+{
+  "rules": [
+    {
+      "id": "ops-view-restricted",
+      "effect": "allow",
+      "actions": ["view", "query"],
+      "subject": {
+        "roles_any": ["ops", "analyst"],
+        "attributes": {
+          "clearance_min": "restricted"
+        }
+      },
+      "resource": {
+        "classification_max": "restricted"
+      },
+      "context": {
+        "need_to_know": true,
+        "location_whitelist": ["jp", "tokyo-metropolitan"]
+      }
+    },
+    {
+      "id": "exec-approve-critical",
+      "effect": "allow",
+      "actions": ["approve"],
+      "subject": {
+        "roles_any": ["executive"],
+        "attributes": {
+          "delegated": true
+        }
+      },
+      "resource": {
+        "classification_max": "secret"
+      },
+      "context": {
+        "incident_severity_min": "high",
+        "location_whitelist": ["jp", "tokyo-metropolitan"]
+      }
+    },
+    {
+      "id": "deny-outside-japan",
+      "effect": "deny",
+      "actions": ["view", "query", "approve"],
+      "context": {
+        "location_whitelist": ["jp", "tokyo-metropolitan"]
+      }
+    }
+  ],
+  "hierarchy": {
+    "classification": ["public", "restricted", "confidential", "secret"],
+    "incident_severity": ["low", "medium", "high", "critical"],
+    "clearance": ["public", "restricted", "confidential", "secret"]
+  }
+}
