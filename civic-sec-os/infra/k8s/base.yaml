@@ -1,0 +1,110 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: civic-sec-os
+  labels:
+    opa.enforced: "true"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ingestor
+  namespace: civic-sec-os
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ingestor
+  template:
+    metadata:
+      labels:
+        app: ingestor
+    spec:
+      containers:
+        - name: ingestor
+          image: ghcr.io/example/ingestor:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SCHEMA_REGISTRY_URL
+              value: http://schema-registry:8081
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingestor
+  namespace: civic-sec-os
+spec:
+  selector:
+    app: ingestor
+  ports:
+    - port: 8080
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: policy-pdp
+  namespace: civic-sec-os
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: policy-pdp
+  template:
+    metadata:
+      labels:
+        app: policy-pdp
+    spec:
+      containers:
+        - name: policy
+          image: ghcr.io/example/policy:latest
+          ports:
+            - containerPort: 8181
+          volumeMounts:
+            - name: policies
+              mountPath: /policies
+      volumes:
+        - name: policies
+          configMap:
+            name: policy-bundle
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: policy-bundle
+  namespace: civic-sec-os
+  labels:
+    openpolicyagent.org/policy: "true"
+  annotations:
+    openpolicyagent.org/policy-status: "rego"
+data:
+  abac.rego: |
+  package civic.security.abac
+
+  default allow := false
+
+  classification_order := {"public": 0, "restricted": 1, "confidential": 2, "secret": 3}
+  severity_order := {"low": 0, "medium": 1, "high": 2, "critical": 3}
+  clearance_order := classification_order
+
+  allow {
+    input.context.location in {"jp", "tokyo-metropolitan"}
+    input.context.need_to_know == true
+    some role
+    role := input.subject.roles[_]
+    role == "ops" or role == "analyst"
+    clearance_order[input.subject.attributes.clearance] >= clearance_order["restricted"]
+    classification_order[input.resource.classification] <= classification_order["restricted"]
+    input.action == "view" or input.action == "query"
+  }
+
+  allow {
+    input.context.location in {"jp", "tokyo-metropolitan"}
+    input.subject.roles[_] == "executive"
+    input.subject.attributes.delegated == true
+    severity_order[input.context.incident_severity] >= severity_order["high"]
+    classification_order[input.resource.classification] <= classification_order["secret"]
+    input.action == "approve"
+  }
+
