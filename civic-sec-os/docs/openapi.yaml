@@ -1,0 +1,302 @@
+openapi: 3.0.3
+info:
+  title: Civic Security OS API
+  version: 0.1.0
+  description: |
+    Core APIs for ingest, fusion, geospatial analytics, incidents, and audit queries.
+servers:
+  - url: https://api.civic-sec-os.local
+paths:
+  /ingest/{source}:
+    post:
+      summary: Ingest events from a registered source
+      parameters:
+        - in: path
+          name: source
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                schema:
+                  type: string
+                payload:
+                  type: object
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  normalized:
+                    type: object
+  /graph/entity/{id}:
+    get:
+      summary: Retrieve fused entity details
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Entity document
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  neighbors:
+                    type: array
+                    items:
+                      type: string
+  /geo/cluster:
+    post:
+      summary: Compute spatial clusters
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                points:
+                  type: array
+                  items:
+                    type: array
+                    items:
+                      type: number
+                eps_km:
+                  type: number
+                min_samples:
+                  type: integer
+      responses:
+        '200':
+          description: Clusters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  clusters:
+                    type: array
+                    items:
+                      type: array
+                      items:
+                        type: array
+                        items:
+                          type: number
+  /geo/isochrone:
+    post:
+      summary: Generate an isochrone polygon
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                origin:
+                  type: array
+                  items:
+                    type: number
+                  minItems: 2
+                  maxItems: 2
+                minutes:
+                  type: integer
+                average_speed_kmph:
+                  type: number
+      responses:
+        '200':
+          description: Isochrone polygon
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  coordinates:
+                    type: array
+                    items:
+                      type: array
+                      items:
+                        type: number
+  /cop/view:
+    get:
+      summary: Fetch COP layer snapshot
+      parameters:
+        - in: query
+          name: bbox
+          schema:
+            type: string
+          description: minLon,minLat,maxLon,maxLat
+        - in: query
+          name: layers
+          schema:
+            type: string
+      responses:
+        '200':
+          description: COP data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  layers:
+                    type: array
+                    items:
+                      type: string
+                  features:
+                    type: array
+                    items:
+                      type: object
+  /incident/{id}/action:
+    post:
+      summary: Execute an incident workflow action
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                comment:
+                  type: string
+      responses:
+        '200':
+          description: Action recorded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+  /audit/trace:
+    get:
+      summary: Query provenance trail for a resource
+      parameters:
+        - in: query
+          name: resource
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Audit chain
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  entries:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        subject:
+                          type: string
+                        action:
+                          type: string
+                        decision:
+                          type: string
+  /taxii2/collections:
+    get:
+      summary: List TAXII collections
+      responses:
+        '200':
+          description: Collections
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  collections:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        title:
+                          type: string
+  /taxii2/collections/{collection_id}/objects:
+    get:
+      summary: Pull STIX objects from a collection
+      parameters:
+        - in: path
+          name: collection_id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Bundle of STIX objects
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  objects:
+                    type: array
+                    items:
+                      type: object
+    post:
+      summary: Push STIX bundle into collection
+      parameters:
+        - in: path
+          name: collection_id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bundle:
+                  type: object
+      responses:
+        '202':
+          description: Accepted
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    AuditEntry:
+      type: object
+      properties:
+        subject:
+          type: string
+        action:
+          type: string
+        decision:
+          type: string
+        justification:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
