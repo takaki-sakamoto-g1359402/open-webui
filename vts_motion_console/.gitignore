@@ -1,0 +1,4 @@
+.vts_token.json
+.motion_console_settings.json
+__pycache__/
+*.pyc
