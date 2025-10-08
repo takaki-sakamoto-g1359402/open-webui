@@ -1,0 +1,7 @@
+fastapi
+sqlmodel
+casbin
+uvicorn
+pydantic
+redis
+
