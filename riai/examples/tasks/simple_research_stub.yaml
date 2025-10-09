@@ -1,0 +1,8 @@
+goal: "Research the mission statement of ExampleOrg using offline stubs"
+max_steps: 15
+budget_tokens: 4000
+tools:
+  - browser_stub
+  - python_exec
+notes:
+  web_access: false

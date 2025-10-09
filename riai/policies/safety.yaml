@@ -1,0 +1,31 @@
+command_allowlist:
+  - ls
+  - cat
+  - pwd
+  - echo
+  - grep
+  - sed
+command_denylist:
+  - rm
+  - mv
+  - chmod
+  - chown
+  - sudo
+  - shutdown
+  - reboot
+  - curl
+web:
+  enabled: false
+  domain_allowlist: []
+  timeout_seconds: 2
+  max_content_length: 65536
+filesystem:
+  base_dir: .
+  read_only: true
+  max_read_bytes: 131072
+rate_limits:
+  tools_per_minute: 60
+  max_recursion_depth: 5
+human_in_loop:
+  enabled: false
+  breakpoints: []

@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=65", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "riai"
+version = "0.1.0"
+description = "Riai v1 - local safety-first autonomous agent"
+requires-python = ">=3.11"
+authors = [{name = "Riai Team", email = "safety@riai.local"}]
+readme = "README.md"
+license = {text = "MIT"}
+dependencies = [
+    "click>=8.1",
+    "pydantic>=2.5",
+    "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+]
+
+[project.scripts]
+riai = "riai.cli:main"
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+[tool.pytest.ini_options]
+minversion = "7.4"
+addopts = "-ra"
+testpaths = ["tests"]
