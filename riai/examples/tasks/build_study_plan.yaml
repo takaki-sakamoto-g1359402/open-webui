@@ -1,0 +1,6 @@
+goal: "Design a four-week study plan for learning Rust"
+max_steps: 20
+budget_tokens: 5000
+tools:
+  - filesystem
+  - python_exec

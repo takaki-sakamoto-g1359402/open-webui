@@ -1,0 +1,11 @@
+agent:
+  planner_seed: 42
+  default_max_steps: 30
+  default_budget_tokens: 8000
+memory:
+  db_path: data/memories.sqlite3
+logging:
+  level: INFO
+  json: true
+safety_policy: policies/safety.yaml
+tools_config: configs/tools.yaml

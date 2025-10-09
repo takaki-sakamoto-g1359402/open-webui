@@ -1,0 +1,21 @@
+default_tools:
+  - filesystem
+  - shell
+  - python_exec
+  - browser_stub
+available_tools:
+  filesystem:
+    module: riai.tools.filesystem
+    class: FilesystemTool
+  shell:
+    module: riai.tools.shell
+    class: ShellTool
+  python_exec:
+    module: riai.tools.python_exec
+    class: PythonExecutionTool
+  web_fetch:
+    module: riai.tools.web_fetch
+    class: WebFetchTool
+  browser_stub:
+    module: riai.tools.browser_stub
+    class: BrowserStubTool

@@ -1,0 +1,6 @@
+goal: "Summarize the local PDF manual located in docs/manual.pdf"
+max_steps: 25
+budget_tokens: 6000
+tools:
+  - filesystem
+  - python_exec
