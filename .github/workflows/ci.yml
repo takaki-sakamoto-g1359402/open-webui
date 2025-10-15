@@ -1,0 +1,29 @@
+name: CI
+on:
+  pull_request:
+    branches: [ "review-main" ]
+permissions:
+  contents: read
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e .
+      - name: Install QA tooling
+        run: |
+          pip install ruff coverage bandit
+      - name: Lint
+        run: ruff check .
+      - name: Security (Bandit)
+        run: bandit -q -r .
+      - name: Test
+        run: |
+          pytest -q --maxfail=1

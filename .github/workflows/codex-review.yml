@@ -1,0 +1,27 @@
+name: Codex Review
+on:
+  pull_request:
+    branches: [ "review-main" ]
+permissions:
+  contents: read
+  pull-requests: write
+jobs:
+  codex:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install deps
+        run: |
+          pip install requests
+      - name: Run Codex review
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          OPENAI_MODEL: gpt-4o-mini
+        run: |
+          python scripts/codex_review.py
