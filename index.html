@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cosmic Seeds — 宇宙×未来ミニゲーム PoC</title>
+  <style>
+    /* === カラー編集ポイント: 必要に応じてカスタマイズしてください === */
+    :root {
+      --bg: #060712;
+      --panel: #101425;
+      --accent: #5ab9ff;
+      --accent-strong: #9ad7ff;
+      --text: #f5f7ff;
+      --muted: #a6b2d1;
+      --warning: #ffc857;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
+      background: radial-gradient(circle at top, rgba(90, 185, 255, 0.2), transparent 55%), var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem 1rem 3rem;
+      line-height: 1.5;
+    }
+    h1, h2, h3 {
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+    h1 {
+      margin: 0 0 1rem;
+      text-align: center;
+      font-size: 1.75rem;
+    }
+    h2 {
+      font-size: 1.25rem;
+      margin-top: 2rem;
+      border-left: 0.35rem solid var(--accent);
+      padding-left: 0.75rem;
+    }
+    h3 {
+      margin-top: 1.25rem;
+      font-size: 1.1rem;
+    }
+    p {
+      margin-top: 0.5rem;
+      color: var(--muted);
+    }
+    a {
+      color: var(--accent-strong);
+    }
+    a:focus, button:focus, input:focus {
+      outline: 3px solid var(--accent-strong);
+      outline-offset: 2px;
+    }
+    button {
+      font-size: 1rem;
+      padding: 0.6rem 1.1rem;
+      border-radius: 999px;
+      border: 1px solid var(--accent);
+      background: linear-gradient(135deg, rgba(90, 185, 255, 0.25), rgba(90, 185, 255, 0.05));
+      color: var(--text);
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(90, 185, 255, 0.25);
+    }
+    button[aria-pressed="true"] {
+      background: linear-gradient(135deg, rgba(154, 215, 255, 0.45), rgba(90, 185, 255, 0.35));
+    }
+    main {
+      width: min(100%, 1100px);
+      display: grid;
+      gap: 1.5rem;
+    }
+    .intro {
+      background: var(--panel);
+      border-radius: 1.25rem;
+      padding: 1.5rem;
+      box-shadow: 0 20px 40px rgba(6, 7, 18, 0.45);
+    }
+    .game-wrapper {
+      background: var(--panel);
+      border-radius: 1.5rem;
+      padding: 1.2rem;
+      display: grid;
+      gap: 1rem;
+      box-shadow: 0 20px 40px rgba(6, 7, 18, 0.5);
+    }
+    .hud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .score {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+    canvas {
+      width: 100%;
+      height: clamp(240px, 55vw, 420px);
+      border-radius: 1rem;
+      background: radial-gradient(circle at 30% 30%, rgba(90, 185, 255, 0.12), rgba(6, 7, 18, 0.95));
+      display: block;
+    }
+    .panels {
+      display: grid;
+      gap: 1.5rem;
+    }
+    .panel {
+      background: var(--panel);
+      border-radius: 1.25rem;
+      padding: 1.5rem;
+      box-shadow: 0 16px 32px rgba(6, 7, 18, 0.4);
+    }
+    .news-list {
+      margin: 1rem 0 0;
+      padding-left: 1.1rem;
+    }
+    .news-list li {
+      margin-bottom: 0.75rem;
+    }
+    .quiz-item {
+      margin-top: 1.25rem;
+      padding: 1rem;
+      border-radius: 1rem;
+      background: rgba(90, 185, 255, 0.08);
+    }
+    label {
+      display: block;
+      font-weight: 600;
+    }
+    input[type="text"] {
+      width: 100%;
+      margin-top: 0.5rem;
+      padding: 0.6rem 0.8rem;
+      border-radius: 0.75rem;
+      border: 1px solid rgba(154, 215, 255, 0.2);
+      background: rgba(6, 7, 18, 0.85);
+      color: var(--text);
+      font-size: 1rem;
+    }
+    .result {
+      margin-top: 0.5rem;
+      font-size: 0.95rem;
+    }
+    .result[data-status="correct"] {
+      color: #8cf5c5;
+    }
+    .result[data-status="incorrect"] {
+      color: var(--warning);
+    }
+    .future-grid {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      margin-top: 1.2rem;
+    }
+    .future-card {
+      padding: 1rem;
+      border-radius: 1rem;
+      background: linear-gradient(145deg, rgba(90, 185, 255, 0.12), rgba(6, 7, 18, 0.9));
+      border: 1px solid rgba(90, 185, 255, 0.25);
+      min-height: 140px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+    @media (min-width: 900px) {
+      main {
+        grid-template-columns: 2fr 1fr;
+      }
+      .panels {
+        grid-template-columns: 1fr;
+        align-content: start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="intro" role="banner">
+    <h1>Cosmic Seeds — 宇宙×未来ミニゲーム PoC</h1>
+    <p>星を集めてスターダストを貯めつつ、宇宙ニュースやクイズ、未来への問いに触れて人類のこれからを思い描こう。</p>
+  </header>
+  <main>
+    <section class="game-wrapper" aria-label="星集めゲームセクション">
+      <div class="hud" role="toolbar" aria-label="ゲーム操作">
+        <div class="score" aria-live="polite" aria-atomic="true">
+          スターダスト: <span id="score">0</span>
+        </div>
+        <button id="toggle" type="button" aria-pressed="false" aria-controls="space-field">開始</button>
+        <div class="sr-only" id="status" aria-live="assertive"></div>
+      </div>
+      <canvas id="space-field" role="img" aria-label="星をタップまたはクリックして集めるキャンバス"></canvas>
+      <p>Spaceキーまたはボタンで開始/一時停止。星を集めると1点、クイズ正解で+2点!</p>
+    </section>
+    <div class="panels">
+      <section class="panel" aria-labelledby="news-heading">
+        <h2 id="news-heading">今日の宇宙ニュース</h2>
+        <p>宇宙の最新トピックから未来へのヒントを探そう。</p>
+        <ul class="news-list" id="news-list"></ul>
+      </section>
+      <section class="panel" aria-labelledby="quiz-heading">
+        <h2 id="quiz-heading">クイズ: 宇宙リテラシーを磨こう</h2>
+        <p>正解するとスターダストが増えるよ。ひらがな・カタカナ・漢字どれでもOK。</p>
+        <div id="quiz-area"></div>
+      </section>
+      <section class="panel" aria-labelledby="future-heading">
+        <h2 id="future-heading">未来の問い</h2>
+        <p>宇宙や人類の未来を想像し、思考のタネをまこう。</p>
+        <div class="future-grid" id="future-grid"></div>
+      </section>
+    </div>
+  </main>
+  <script>
+    (function() {
+      'use strict';
+      var doc = document;
+      var canvas = doc.getElementById('space-field');
+      var ctx = canvas.getContext('2d');
+      var toggleBtn = doc.getElementById('toggle');
+      var scoreEl = doc.getElementById('score');
+      var statusEl = doc.getElementById('status');
+      var running = false;
+      var score = 0;
+      var stars = [];
+      var lastTimestamp = 0;
+      var spawnInterval = 1200;
+      var spawnAccumulator = 0;
+      var devicePixelRatio = window.devicePixelRatio || 1;
+      /* === NEWS編集ポイント: 下記配列を更新してください === */
+      var NEWS = [
+        {title:"Chironでリング形成の証拠", url:"https://www.reuters.com/science/astronomers-observe-rings-forming-around-icy-celestial-body-chiron-2025-10-15/"},
+        {title:"太陽に“雨”が降る理由を解明", url:"https://www.sciencedaily.com/releases/2025/10/251015032312.htm"},
+        {title:"常識外れの巨大惑星、形成論に再考", url:"https://www.sciencedaily.com/releases/2025/10/251015032307.htm"},
+        {title:"3I/ATLASは自然な彗星（エイリアン船ではない）", url:"https://www.skyatnightmagazine.com/news/3i-atlas-not-aliens"},
+        {title:"JWSTが超新星直前の赤色超巨星を捉える", url:"https://www.livescience.com/space/astronomy/hidden-doomed-star-revealed-by-james-webb-space-telescope-could-solve-decades-old-mystery"}
+      ];
+      /* === QUIZ編集ポイント: 下記配列を更新してください === */
+      var QUIZ = [
+        {q:"地球に最も近い恒星は？", a:"太陽"},
+        {q:"太陽系最大の惑星は？", a:"木星"},
+        {q:"月の模様は古くから何に例えられる？", a:"ウサギ"}
+      ];
+      var FUTURE_PROMPTS = [
+        '月面に暮らすとしたら、どんな文化が生まれるだろう？',
+        '宇宙での資源利用は地球環境をどう変える？',
+        '遠い星の生き物と出会ったら、どんなルールで共存できる？'
+      ];
+      function resizeCanvas() {
+        devicePixelRatio = window.devicePixelRatio || 1;
+        var rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * devicePixelRatio;
+        canvas.height = rect.height * devicePixelRatio;
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.scale(devicePixelRatio, devicePixelRatio);
+      }
+      function random(min, max) {
+        return Math.random() * (max - min) + min;
+      }
+      function spawnStar() {
+        var rect = canvas.getBoundingClientRect();
+        var star = {
+          x: random(20, rect.width - 20),
+          y: random(20, rect.height - 20),
+          radius: random(5, 12),
+          sparkle: random(0.4, 1),
+          angle: Math.random() * Math.PI * 2,
+          speed: random(5, 12),
+          ttl: random(4, 7)
+        };
+        stars.push(star);
+      }
+      function update(delta) {
+        for (var i = stars.length - 1; i >= 0; i--) {
+          var star = stars[i];
+          star.ttl -= delta / 1000;
+          if (star.ttl <= 0) {
+            stars.splice(i, 1);
+          }
+        }
+      }
+      function draw() {
+        var rect = canvas.getBoundingClientRect();
+        ctx.clearRect(0, 0, rect.width, rect.height);
+        var gradient = ctx.createLinearGradient(0, 0, rect.width, rect.height);
+        gradient.addColorStop(0, 'rgba(9, 19, 40, 0.9)');
+        gradient.addColorStop(1, 'rgba(6, 7, 18, 0.9)');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, rect.width, rect.height);
+        ctx.save();
+        ctx.shadowColor = 'rgba(90, 185, 255, 0.8)';
+        for (var i = 0; i < stars.length; i++) {
+          var star = stars[i];
+          var pulse = 0.6 + Math.sin(Date.now() / 200 + star.angle) * 0.25;
+          ctx.beginPath();
+          ctx.fillStyle = 'rgba(154, 215, 255, ' + (0.7 + star.sparkle * 0.4) + ')';
+          ctx.shadowBlur = 12;
+          ctx.arc(star.x, star.y, star.radius * pulse, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+      function gameLoop(timestamp) {
+        if (!running) {
+          lastTimestamp = timestamp;
+          return;
+        }
+        var delta = timestamp - lastTimestamp;
+        lastTimestamp = timestamp;
+        spawnAccumulator += delta;
+        if (spawnAccumulator >= spawnInterval) {
+          spawnStar();
+          spawnAccumulator = spawnAccumulator % spawnInterval;
+        }
+        update(delta);
+        draw();
+        window.requestAnimationFrame(gameLoop);
+      }
+      function toggleGame(forceState) {
+        if (typeof forceState === 'boolean') {
+          running = forceState;
+        } else {
+          running = !running;
+        }
+        toggleBtn.setAttribute('aria-pressed', running);
+        toggleBtn.textContent = running ? '一時停止' : '開始';
+        statusEl.textContent = running ? 'ゲーム開始。星を集めよう。' : 'ゲームを一時停止しました。';
+        if (running) {
+          lastTimestamp = performance.now();
+          window.requestAnimationFrame(gameLoop);
+        }
+      }
+      function addScore(points, message) {
+        score += points;
+        scoreEl.textContent = score;
+        statusEl.textContent = message || ('スターダストが' + points + '点増えました。');
+      }
+      function handlePointer(event) {
+        if (!running) {
+          return;
+        }
+        var rect = canvas.getBoundingClientRect();
+        var x = (event.touches ? event.touches[0].clientX : event.clientX) - rect.left;
+        var y = (event.touches ? event.touches[0].clientY : event.clientY) - rect.top;
+        for (var i = stars.length - 1; i >= 0; i--) {
+          var star = stars[i];
+          var dx = star.x - x;
+          var dy = star.y - y;
+          var distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance <= star.radius * 1.4) {
+            stars.splice(i, 1);
+            addScore(1, '星を集めて1点ゲット。現在のスターダストは' + score + '点。');
+            break;
+          }
+        }
+      }
+      function populateNews() {
+        var list = doc.getElementById('news-list');
+        NEWS.forEach(function(item) {
+          var li = doc.createElement('li');
+          var link = doc.createElement('a');
+          link.href = item.url;
+          link.target = '_blank';
+          link.rel = 'noopener';
+          link.textContent = item.title;
+          link.setAttribute('aria-label', item.title + ' (別タブが開きます)');
+          li.appendChild(link);
+          list.appendChild(li);
+        });
+      }
+      function normalize(text) {
+        return text.replace(/\s+/g, '').toLowerCase();
+      }
+      function createQuiz() {
+        var quizArea = doc.getElementById('quiz-area');
+        QUIZ.forEach(function(item, index) {
+          var wrapper = doc.createElement('div');
+          wrapper.className = 'quiz-item';
+          wrapper.setAttribute('role', 'group');
+          wrapper.setAttribute('aria-labelledby', 'quiz-q-' + index);
+          var label = doc.createElement('label');
+          label.id = 'quiz-q-' + index;
+          label.textContent = (index + 1) + '. ' + item.q;
+          wrapper.appendChild(label);
+          var input = doc.createElement('input');
+          input.type = 'text';
+          input.setAttribute('aria-describedby', 'quiz-feedback-' + index);
+          input.autocomplete = 'off';
+          wrapper.appendChild(input);
+          var submit = doc.createElement('button');
+          submit.type = 'button';
+          submit.textContent = '回答する';
+          submit.addEventListener('click', function() {
+            evaluateAnswer(item, input, feedback, submit);
+          });
+          wrapper.appendChild(submit);
+          var feedback = doc.createElement('div');
+          feedback.id = 'quiz-feedback-' + index;
+          feedback.className = 'result';
+          feedback.setAttribute('aria-live', 'polite');
+          wrapper.appendChild(feedback);
+          input.addEventListener('keydown', function(evt) {
+            if (evt.key === 'Enter') {
+              evaluateAnswer(item, input, feedback, submit);
+            }
+          });
+          quizArea.appendChild(wrapper);
+        });
+      }
+      function evaluateAnswer(item, input, feedback, button) {
+        var answer = normalize(input.value);
+        if (!answer) {
+          feedback.textContent = '回答を入力してね。';
+          feedback.dataset.status = '';
+          return;
+        }
+        var correct = normalize(item.a);
+        if (answer === correct) {
+          feedback.textContent = '正解！スターダスト+2。';
+          feedback.dataset.status = 'correct';
+          addScore(2, 'クイズ正解でスターダストが2点増えました。現在' + score + '点。');
+          button.disabled = true;
+          button.textContent = 'クリア！';
+          button.setAttribute('aria-pressed', 'true');
+        } else {
+          feedback.textContent = '残念！正解は「' + item.a + '」だよ。';
+          feedback.dataset.status = 'incorrect';
+        }
+      }
+      function populateFuture() {
+        var grid = doc.getElementById('future-grid');
+        FUTURE_PROMPTS.forEach(function(text, index) {
+          var card = doc.createElement('article');
+          card.className = 'future-card';
+          card.setAttribute('tabindex', '0');
+          card.setAttribute('aria-label', '未来の問い ' + (index + 1));
+          var title = doc.createElement('h3');
+          title.textContent = '問い ' + (index + 1);
+          var body = doc.createElement('p');
+          body.textContent = text;
+          card.appendChild(title);
+          card.appendChild(body);
+          grid.appendChild(card);
+        });
+      }
+      function init() {
+        resizeCanvas();
+        populateNews();
+        createQuiz();
+        populateFuture();
+        draw();
+      }
+      toggleBtn.addEventListener('click', function() {
+        toggleGame();
+      });
+      window.addEventListener('keydown', function(evt) {
+        if (evt.code === 'Space') {
+          evt.preventDefault();
+          toggleGame();
+        }
+      });
+      canvas.addEventListener('click', handlePointer);
+      canvas.addEventListener('touchstart', function(evt) {
+        handlePointer(evt);
+        evt.preventDefault();
+      }, {passive: false});
+      window.addEventListener('resize', function() {
+        var rect = canvas.getBoundingClientRect();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        resizeCanvas();
+        draw();
+        statusEl.textContent = '画面サイズに合わせてキャンバスを調整しました。';
+      });
+      init();
+    })();
+  </script>
+</body>
+</html>
