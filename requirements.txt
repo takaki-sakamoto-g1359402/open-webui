@@ -1,10 +1,9 @@
-openai>=1.15.0
-pydantic>=2
-tqdm
-rich
-aiohttp
+numpy
+scipy
+networkx
+matplotlib
 pytest
-langchain==0.2.*
-langgraph
-web3
+ruff
+mypy
+pyyaml
 pandas

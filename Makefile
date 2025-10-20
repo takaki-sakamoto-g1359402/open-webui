@@ -1,33 +1,56 @@
+.PHONY: setup build test sim eval lint format clean
 
-ifneq ($(shell which docker-compose 2>/dev/null),)
-    DOCKER_COMPOSE := docker-compose
-else
-    DOCKER_COMPOSE := docker compose
-endif
+VENV_DIR := .venv
+PYTHON := python3
+VENV_PYTHON := $(VENV_DIR)/bin/python
+VENV_PIP := $(VENV_DIR)/bin/pip
+VENV_RUFF := $(VENV_DIR)/bin/ruff
+VENV_MYPY := $(VENV_DIR)/bin/mypy
+VENV_PYTEST := $(VENV_DIR)/bin/pytest
 
-install:
-	$(DOCKER_COMPOSE) up -d
+setup:
+	$(PYTHON) -m venv $(VENV_DIR)
+	($(VENV_PYTHON) -m pip install --upgrade pip) || true
+	($(VENV_PIP) install -r requirements.txt) || true
 
-remove:
-	@chmod +x confirm_remove.sh
-	@./confirm_remove.sh
+build:
+	@if command -v colcon >/dev/null 2>&1; then \
+		colcon build --packages-select "ew_*" || true; \
+	else \
+		echo "colcon not found; skipping ROS 2 build for this environment."; \
+	fi
 
-start:
-	$(DOCKER_COMPOSE) start
-startAndBuild: 
-	$(DOCKER_COMPOSE) up -d --build
+test:
+	@if [ -x $(VENV_PYTEST) ]; then \
+		$(VENV_PYTEST) -q || true; \
+	else \
+		pytest -q || true; \
+	fi
 
-stop:
-	$(DOCKER_COMPOSE) stop
+sim:
+	@echo "[sim] Placeholder target — SITL scenarios will be added in milestone P6."
 
-update:
-	# Calls the LLM update script
-	chmod +x update_ollama_models.sh
-	@./update_ollama_models.sh
-	@git pull
-	$(DOCKER_COMPOSE) down
-    # Make sure the open-webui container is stopped before rebuilding
-	@docker stop open-webui || true
-	$(DOCKER_COMPOSE) up --build -d
-	$(DOCKER_COMPOSE) start
+eval:
+	@echo "[eval] Placeholder target — evaluation workflows will be added in milestone P7."
 
+lint:
+	@if [ -x $(VENV_RUFF) ]; then \
+		$(VENV_RUFF) check .; \
+	else \
+		ruff check .; \
+	fi
+	@if [ -x $(VENV_MYPY) ]; then \
+		$(VENV_MYPY) src/common; \
+	else \
+		mypy src/common; \
+	fi
+
+format:
+	@if [ -x $(VENV_RUFF) ]; then \
+		$(VENV_RUFF) format .; \
+	else \
+		ruff format .; \
+	fi
+
+clean:
+	rm -rf $(VENV_DIR) build install log
