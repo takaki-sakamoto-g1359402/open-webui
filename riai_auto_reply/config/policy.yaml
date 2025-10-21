@@ -1,0 +1,24 @@
+metadata:
+  version: 1
+  updated: 2024-05-01
+risk_thresholds:
+  auto_send_max_risk: 39
+  manual_review_risk: 40
+forbidden_keywords:
+  - wire transfer
+  - password
+  - confidential
+  - 秘密
+known_contacts:
+  - id: slack:U123456
+    name: "Taro Yamada"
+  - id: gmail:user@example.com
+    name: "Jane Smith"
+templates:
+  ja: templates/reply_ja.txt
+  en: templates/reply_en.txt
+auto_topics:
+  - ack
+  - thanks
+  - scheduling
+  - faq
