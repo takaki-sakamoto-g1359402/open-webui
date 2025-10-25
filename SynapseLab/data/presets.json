@@ -1,0 +1,85 @@
+{
+  "defaults": {
+    "learning_rate": 0.05,
+    "decay": 0.01,
+    "leak": 0.15,
+    "noise": 0.02,
+    "time_scale": 1.0,
+    "learning_enabled": true,
+    "paused": false
+  },
+  "graphs": {
+    "starter": {
+      "graph": {
+        "nodes": [
+          {"id": "0", "position": [360.0, 300.0], "custom": {}},
+          {"id": "1", "position": [520.0, 300.0], "custom": {}},
+          {"id": "2", "position": [440.0, 420.0], "custom": {}},
+          {"id": "3", "position": [600.0, 420.0], "custom": {}}
+        ],
+        "edges": [
+          {"from": "0", "to": "1", "weight": 0.2},
+          {"from": "1", "to": "2", "weight": 0.15},
+          {"from": "2", "to": "3", "weight": 0.18}
+        ],
+        "next_id": 4
+      }
+    }
+  },
+  "missions": {
+    "route_signal": {
+      "title": "Route a Signal",
+      "description": "Keep the goal neuron (red border) active for 5 seconds by wiring supporting paths. Only a few starter synapses are provided.",
+      "goal_id": "goal",
+      "threshold": 0.4,
+      "target_time": 5.0,
+      "graph": {
+        "nodes": [
+          {"id": "source", "position": [280.0, 300.0], "custom": {}},
+          {"id": "relay_a", "position": [420.0, 240.0], "custom": {}},
+          {"id": "relay_b", "position": [420.0, 360.0], "custom": {}},
+          {"id": "goal", "position": [620.0, 300.0], "custom": {"goal": true}},
+          {"id": "support", "position": [520.0, 420.0], "custom": {}}
+        ],
+        "edges": [
+          {"from": "source", "to": "relay_a", "weight": 0.25},
+          {"from": "source", "to": "relay_b", "weight": 0.2},
+          {"from": "relay_a", "to": "goal", "weight": 0.15},
+          {"from": "relay_b", "to": "support", "weight": 0.1},
+          {"from": "support", "to": "goal", "weight": 0.1}
+        ],
+        "next_id": 5
+      }
+    },
+    "recall_pattern": {
+      "title": "Recall a Pattern",
+      "description": "Watch two assemblies co-train, then observe if a partial cue reactivates the whole pattern.",
+      "pattern_nodes": ["p1", "p2", "p3"],
+      "cue_nodes": ["p1"],
+      "train_duration": 4.0,
+      "cycle_interval": 0.6,
+      "train_pulse": 0.6,
+      "cue_duration": 1.2,
+      "cue_pulse": 0.8,
+      "threshold": 0.5,
+      "sustain_time": 1.5,
+      "graph": {
+        "nodes": [
+          {"id": "p1", "position": [320.0, 260.0], "custom": {}},
+          {"id": "p2", "position": [420.0, 320.0], "custom": {}},
+          {"id": "p3", "position": [520.0, 260.0], "custom": {}},
+          {"id": "context", "position": [420.0, 420.0], "custom": {}},
+          {"id": "distractor", "position": [580.0, 380.0], "custom": {}}
+        ],
+        "edges": [
+          {"from": "p1", "to": "p2", "weight": 0.18},
+          {"from": "p2", "to": "p3", "weight": 0.18},
+          {"from": "p3", "to": "p1", "weight": 0.18},
+          {"from": "context", "to": "p2", "weight": 0.1},
+          {"from": "distractor", "to": "context", "weight": 0.05}
+        ],
+        "next_id": 5
+      }
+    }
+  }
+}

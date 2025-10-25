@@ -1,0 +1,185 @@
+[gd_scene load_steps=5 format=3]
+
+[node name="HUD" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("res://scripts/HUD.gd")
+
+[node name="Margin" type="MarginContainer" parent="."]
+anchor_right = 0.25
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = 16.0
+offset_bottom = -16.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="VBox" type="VBoxContainer" parent="Margin"]
+custom_minimum_size = Vector2(320, 0)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Title" type="Label" parent="Margin/VBox"]
+text = "SynapseLab"
+vertical_alignment = 1
+horizontal_alignment = 1
+
+[node name="Tools" type="HBoxContainer" parent="Margin/VBox"]
+size_flags_horizontal = 3
+size_flags_vertical = 1
+
+[node name="Select" type="Button" parent="Margin/VBox/Tools"]
+text = "Select"
+toggle_mode = true
+pressed = true
+
+[node name="AddNeuron" type="Button" parent="Margin/VBox/Tools"]
+text = "Add Neuron"
+toggle_mode = true
+
+[node name="AddSynapse" type="Button" parent="Margin/VBox/Tools"]
+text = "Add Synapse"
+toggle_mode = true
+
+[node name="Remove" type="Button" parent="Margin/VBox/Tools"]
+text = "Remove"
+toggle_mode = true
+
+[node name="Inject" type="Button" parent="Margin/VBox/Tools"]
+text = "Inject"
+toggle_mode = true
+
+[node name="Separator" type="HSeparator" parent="Margin/VBox"]
+
+[node name="Params" type="VBoxContainer" parent="Margin/VBox"]
+size_flags_horizontal = 3
+
+[node name="LearningRate" type="HBoxContainer" parent="Margin/VBox/Params"]
+[node name="Label" type="Label" parent="Margin/VBox/Params/LearningRate"]
+text = "Learning"
+size_flags_horizontal = 1
+[node name="Slider" type="HSlider" parent="Margin/VBox/Params/LearningRate"]
+min_value = 0.0
+max_value = 0.2
+step = 0.001
+size_flags_horizontal = 3
+[node name="Value" type="Label" parent="Margin/VBox/Params/LearningRate"]
+text = "0.05"
+size_flags_horizontal = 1
+horizontal_alignment = 2
+
+[node name="Decay" type="HBoxContainer" parent="Margin/VBox/Params"]
+[node name="Label" type="Label" parent="Margin/VBox/Params/Decay"]
+text = "Decay"
+size_flags_horizontal = 1
+[node name="Slider" type="HSlider" parent="Margin/VBox/Params/Decay"]
+min_value = 0.0
+max_value = 0.1
+step = 0.001
+size_flags_horizontal = 3
+[node name="Value" type="Label" parent="Margin/VBox/Params/Decay"]
+text = "0.01"
+size_flags_horizontal = 1
+horizontal_alignment = 2
+
+[node name="Leak" type="HBoxContainer" parent="Margin/VBox/Params"]
+[node name="Label" type="Label" parent="Margin/VBox/Params/Leak"]
+text = "Leak"
+size_flags_horizontal = 1
+[node name="Slider" type="HSlider" parent="Margin/VBox/Params/Leak"]
+min_value = 0.0
+max_value = 1.0
+step = 0.01
+size_flags_horizontal = 3
+[node name="Value" type="Label" parent="Margin/VBox/Params/Leak"]
+text = "0.15"
+size_flags_horizontal = 1
+horizontal_alignment = 2
+
+[node name="Noise" type="HBoxContainer" parent="Margin/VBox/Params"]
+[node name="Label" type="Label" parent="Margin/VBox/Params/Noise"]
+text = "Noise"
+size_flags_horizontal = 1
+[node name="Slider" type="HSlider" parent="Margin/VBox/Params/Noise"]
+min_value = 0.0
+max_value = 0.5
+step = 0.01
+size_flags_horizontal = 3
+[node name="Value" type="Label" parent="Margin/VBox/Params/Noise"]
+text = "0.00"
+size_flags_horizontal = 1
+horizontal_alignment = 2
+
+[node name="TimeScale" type="HBoxContainer" parent="Margin/VBox/Params"]
+[node name="Label" type="Label" parent="Margin/VBox/Params/TimeScale"]
+text = "Speed"
+size_flags_horizontal = 1
+[node name="Slider" type="HSlider" parent="Margin/VBox/Params/TimeScale"]
+min_value = 0.1
+max_value = 3.0
+step = 0.05
+size_flags_horizontal = 3
+[node name="Value" type="Label" parent="Margin/VBox/Params/TimeScale"]
+text = "1.00"
+size_flags_horizontal = 1
+horizontal_alignment = 2
+
+[node name="Toggles" type="HBoxContainer" parent="Margin/VBox"]
+size_flags_horizontal = 3
+
+[node name="Learning" type="CheckBox" parent="Margin/VBox/Toggles"]
+text = "Learning"
+pressed = true
+
+[node name="Pause" type="CheckBox" parent="Margin/VBox/Toggles"]
+text = "Pause"
+
+[node name="Step" type="Button" parent="Margin/VBox/Toggles"]
+text = "Step"
+
+[node name="FileOps" type="HBoxContainer" parent="Margin/VBox"]
+
+[node name="Save" type="Button" parent="Margin/VBox/FileOps"]
+text = "Save"
+
+[node name="Load" type="Button" parent="Margin/VBox/FileOps"]
+text = "Load"
+
+[node name="MissionLabel" type="Label" parent="Margin/VBox"]
+text = "Mission"
+
+[node name="MissionSelect" type="OptionButton" parent="Margin/VBox"]
+size_flags_horizontal = 3
+
+[node name="AnalyticsButton" type="Button" parent="Margin/VBox"]
+text = "Toggle Analytics"
+
+[node name="AnalyticsPanel" type="Panel" parent="Margin/VBox"]
+visible = false
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="AnalyticsVBox" type="VBoxContainer" parent="Margin/VBox/AnalyticsPanel"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -8.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Stats" type="Label" parent="Margin/VBox/AnalyticsPanel/AnalyticsVBox"]
+text = "Stats"
+
+[node name="ActivationHist" type="RichTextLabel" parent="Margin/VBox/AnalyticsPanel/AnalyticsVBox"]
+bbcode_enabled = true
+custom_minimum_size = Vector2(0, 120)
+text = "Activation histogram"
+
+[node name="WeightHist" type="RichTextLabel" parent="Margin/VBox/AnalyticsPanel/AnalyticsVBox"]
+bbcode_enabled = true
+custom_minimum_size = Vector2(0, 120)
+text = "Weight histogram"

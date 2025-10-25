@@ -1,0 +1,15 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:  https://docs.godotengine.org/en/stable/tutorials/io/using_config_files.html
+
+config_version=5
+
+[application]
+config/name="SynapseLab"
+config/description="Neuron & synapse sandbox"
+run/main_scene="res://scenes/Main.tscn"
+
+[rendering]
+quality/intended_usage/framebuffer_allocation=2

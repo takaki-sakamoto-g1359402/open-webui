@@ -1,0 +1,26 @@
+{
+  "graph": {
+    "nodes": [
+      {"id": "0", "position": [360.0, 300.0], "custom": {}},
+      {"id": "1", "position": [520.0, 300.0], "custom": {}},
+      {"id": "2", "position": [440.0, 420.0], "custom": {}},
+      {"id": "3", "position": [600.0, 420.0], "custom": {}}
+    ],
+    "edges": [
+      {"from": "0", "to": "1", "weight": 0.25},
+      {"from": "1", "to": "2", "weight": 0.18},
+      {"from": "2", "to": "3", "weight": 0.20}
+    ],
+    "next_id": 4
+  },
+  "params": {
+    "learning_rate": 0.05,
+    "decay": 0.01,
+    "leak": 0.15,
+    "noise": 0.02,
+    "time_scale": 1.0,
+    "learning_enabled": true,
+    "max_weight": 1.5
+  },
+  "mission": ""
+}
