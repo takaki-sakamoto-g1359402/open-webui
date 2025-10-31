@@ -1,0 +1,108 @@
+Here’s a copy-paste, production-grade prompt tailored for Codex. It’s designed to generate a clean, IP-safe repo for a “Fully Autonomous AI + Original 3D Avatar” stack. Paste this as your single instruction to Codex.
+
+⸻
+
+Codex Build Brief — “Riai Autonomy+Avatar” (IP-Clean, Production-Ready)
+
+Role: You are a senior full-stack engineer generating a complete, IP-clean repository.
+Deliverable: Output multi-file code using the format shown in Output Format below.
+Do not ask clarifying questions. Choose safe, sensible defaults. Be deterministic.
+
+Objective
+
+Create a working monorepo that ships:
+1.Agent Core (Python): plan-act-reflect loop with tools, long-term memory, and safety checks.
+2.Realtime Voice Bridge (Node.js or Python): low-latency speech I/O via OpenAI Realtime API (WebRTC/websocket) and tool-calling handoff to Agent Core.
+3.Original 3D Avatar Runtime (Unity/C#): import VRM 1.0 avatar, lip-sync from audio/phonemes, facial expressions (BlendShapes), simple idle gestures; includes a default original anime-inspired avatar rig, created procedurally (neutral colors, no franchise motifs), suitable for commercial use.
+4.Operator UI (Vite + TypeScript): local control panel for mic toggle, TTS voice, temperature, memory inspection, tool logs.
+5.Docs, Tests, CI: one-command run; unit tests; GitHub Actions; Apache-2.0 LICENSE.
+
+Important legal constraints: produce only original code and original art/meshes/materials. Do not copy or imitate any specific IP, brand, or character (e.g., Hololive characters). Keep the art neutral and generic anime-inspired.
+
+Functional Requirements
+
+Agent Core (Python, agent-core/)
+•Loop: Plan → Act (tool calls) → Observe → Reflect (self-critique) → Learn (memory update).
+•Tools (examples; plug-in system): web_search (stub with interface), calculator, file_read/write (sandboxed), calendar_stub.
+•Memory: SQLite + embeddings (FAISS or Chroma). CRUD API + TTL + summaries.
+•Policies: safety rules (forbidden intents list), rate limiting, tool-schema validation.
+•Config: .env (OPENAI_API_KEY etc.), config.yaml (model names, temperature, max_tokens, seed=1337).
+•APIs: FastAPI server exposing /chat, /tools/*, /memory/*.
+•Determinism: set global RNG seeds; wrap nondeterministic calls; provide --seed 1337.
+
+Realtime Voice Bridge (Node.js or Python, realtime-bridge/)
+•In/Out: WebRTC or websocket client to OpenAI Realtime API (full-duplex); streams mic audio up, TTS audio down.
+•Events: on function_call → forward to Agent Core tool router; return results to model.
+•Latency targets: round-trip < 500 ms on localhost.
+•VAD (voice activity detection) and echo-cancel config; fallback to push-to-talk.
+
+Original 3D Avatar Runtime (Unity 2022+ or 2023+, avatar-unity/)
+•VRM 1.0 import via UniVRM.
+•Lip-sync: map phoneme events from Realtime Bridge to VRM BlendShapes (ARKit-like mapping table provided).
+•Facial expressions: smile, blink, browUp, sad, surprised; simple gesture controller synchronized with speech amplitude.
+•Original model: generate a simple procedural base avatar at build time (Unity C# editor script) with primitive meshes (quads/low-poly), neutral palette, MToon-style shading; no logos, no distinctive IP. Include an option to replace with a user-provided VRM.
+•IPC: local websocket to receive phoneme/viseme/gesture cues from Bridge.
+•60 FPS target on desktop; graceful degrade if < 30 FPS.
+
+Operator UI (Vite + TS, operator-ui/)
+•Controls: connect/disconnect, mic on/off, TTS voice select, temperature, top-k, tool permissions toggles.
+•Panels: live transcript, function_call log, memory browser (search/add/pin/delete), latency stats.
+
+Tests & CI
+•Python tests (pytest) for memory, tool-router, policy checks.
+•TypeScript tests (vitest) for UI utilities.
+•Unity playmode/editor tests for lip-sync mapper.
+•GitHub Actions: lint, test, build; cache deps.
+
+Packaging & Run
+•Makefile at repo root with targets: setup, dev, dev-agent, dev-bridge, dev-ui, build, test, format, clean.
+•docker-compose.yml for agent-core + bridge + ui (Unity runs locally outside container).
+•Seeded demo conversation + tool calls; sample memory seeds in data/seed/.
+
+Non-Functional Requirements
+•Apache-2.0 license.
+•Code style: black/isort (Python), eslint+prettier (TS), .editorconfig.
+•Logging with structured JSON; rotating file logs.
+•Moderate resource usage; fail gracefully if API key missing.
+•Security: never write outside project dir; sanitize tool inputs; CORS locked to localhost by default.
+
+Files to Include (minimum)
+•README.md (architecture diagram in ASCII, quickstart, safety notes, avatar replacement guide).
+•LICENSE (Apache-2.0).
+•SECURITY.md (threat model + mitigations).
+•docs/ with:
+•avatar_pipeline.md (VRM mapping, BlendShape table, phoneme→viseme map).
+•agent_design.md (loop, memory, tools, reflection method).
+•ops.md (env, secrets, logging, ports).
+•agent-core/ (FastAPI app, memory, tools, tests).
+•realtime-bridge/ (WebRTC/websocket client, event router, tests).
+•operator-ui/ (Vite app, components, tests).
+•avatar-unity/ (Unity project with Editor script to procedurally generate the default avatar + VRM loader + test scene).
+•Makefile, docker-compose.yml, .env.example, .gitignore, .github/workflows/ci.yml.
+
+Output Format (strict)
+
+Emit multiple files using this exact delimiter pattern:
+
+--- file: path/to/file.ext
+<file contents>
+--- file: another/path.ext
+<file contents>
+
+No extra commentary outside files. Placeholders like YOUR_OPENAI_API_KEY are fine.
+
+Implementation Hints (follow, but don’t discuss)
+•Use FastAPI + Uvicorn; FAISS or Chroma for vector store; OpenAI SDK for Realtime.
+•Tool calls: JSON schema; validate with pydantic.
+•Memory summarization: map-reduce summaries with recency/importance scoring.
+•Viseme mapping: basic English phoneme set → VRM BlendShapes (A, E, I, O, U) with smoothing.
+•Procedural avatar: generate low-poly head/torso/hair primitives; neutral palette; expose sliders in Unity Editor.
+•Keep all assets programmatic; no external art or fonts beyond system defaults.
+
+Acceptance Criteria
+•make setup && make dev brings up Agent Core + Bridge + UI; Unity project opens and connects via websocket.
+•Speaking into mic produces TTS playback and synchronized mouth movement in Unity scene.
+•/memory/search returns seeded memories; reflection notes are appended post-task.
+•Unit tests pass in CI; repo license is Apache-2.0; zero references to third-party character IP.
+
+Determin
