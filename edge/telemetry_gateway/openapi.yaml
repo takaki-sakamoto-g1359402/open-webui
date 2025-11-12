@@ -1,0 +1,64 @@
+openapi: 3.0.3
+info:
+  title: telemetry-gateway
+  version: 0.1.0
+paths:
+  /healthz:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: OK
+  /telemetry:
+    post:
+      summary: Ingest telemetry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TelemetryPayload'
+      responses:
+        '200':
+          description: Result
+  /metrics:
+    get:
+      summary: Telemetry metrics
+      responses:
+        '200':
+          description: ingest metrics
+  /mcap/upload:
+    put:
+      summary: Stage MCAP bundle metadata
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UploadRequest'
+      responses:
+        '200':
+          description: staged
+components:
+  schemas:
+    TelemetryPayload:
+      type: object
+      properties:
+        schema:
+          type: string
+        data:
+          type: object
+        priority:
+          type: string
+          enum: [steady, exception]
+      required: [schema, data]
+    UploadRequest:
+      type: object
+      properties:
+        filename:
+          type: string
+        sha256:
+          type: string
+        size_bytes:
+          type: integer
+      required: [filename, sha256, size_bytes]

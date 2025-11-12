@@ -1,0 +1,22 @@
+[
+  {
+    "task_id": "task-001",
+    "robot_id": "R-1234",
+    "mission": {
+      "type": "navigation",
+      "target": "dock-A"
+    },
+    "constraints": {
+      "zone": "Z-Alpha",
+      "speed_limit": 1.0,
+      "time_window": {
+        "start_after": "2025-05-01T12:00:00Z",
+        "finish_before": "2025-05-01T12:10:00Z"
+      }
+    },
+    "kpi_targets": {
+      "latency_ms": 5000,
+      "near_miss_rate": 0.0001
+    }
+  }
+]

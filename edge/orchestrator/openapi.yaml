@@ -1,0 +1,118 @@
+openapi: 3.0.3
+info:
+  title: edge-orchestrator
+  version: 0.1.0
+paths:
+  /healthz:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: OK
+  /tasks:
+    post:
+      summary: Create task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskRequest'
+      responses:
+        '200':
+          description: Task created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskRecord'
+        '403':
+          description: Permit denied
+        '409':
+          description: Duplicate task
+    get:
+      summary: List tasks
+      responses:
+        '200':
+          description: Task map
+  /tasks/{task_id}/complete:
+    post:
+      summary: Mark task complete
+      parameters:
+        - in: path
+          name: task_id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Completed task
+        '404':
+          description: Task not found
+components:
+  schemas:
+    Mission:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [navigation, manipulation]
+        target:
+          type: string
+      required: [type, target]
+    TimeWindow:
+      type: object
+      properties:
+        start_after:
+          type: string
+          format: date-time
+        finish_before:
+          type: string
+          format: date-time
+    Constraints:
+      type: object
+      properties:
+        zone:
+          type: string
+        speed_limit:
+          type: number
+        time_window:
+          $ref: '#/components/schemas/TimeWindow'
+        permit_class:
+          type: string
+      required: [zone, speed_limit]
+    KPITargets:
+      type: object
+      properties:
+        latency_ms:
+          type: integer
+        near_miss_rate:
+          type: number
+      required: [latency_ms, near_miss_rate]
+    TaskRequest:
+      type: object
+      properties:
+        task_id:
+          type: string
+        robot_id:
+          type: string
+        mission:
+          $ref: '#/components/schemas/Mission'
+        constraints:
+          $ref: '#/components/schemas/Constraints'
+        kpi_targets:
+          $ref: '#/components/schemas/KPITargets'
+      required: [task_id, mission, constraints, kpi_targets]
+    TaskRecord:
+      type: object
+      properties:
+        task:
+          $ref: '#/components/schemas/TaskRequest'
+        status:
+          type: string
+        permit_token:
+          type: string
+        created_at:
+          type: number
+        updated_at:
+          type: number
+      required: [task, status, permit_token, created_at, updated_at]

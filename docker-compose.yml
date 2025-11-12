@@ -1,0 +1,59 @@
+version: '3.9'
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2.0.18
+    ports:
+      - '1883:1883'
+  orchestrator:
+    build:
+      context: .
+      dockerfile: edge/Dockerfile
+    command: ["uvicorn", "edge.orchestrator.app:app", "--host", "0.0.0.0", "--port", "8080"]
+    environment:
+      APP_ENV: development
+      SITE_ID: alpha-site
+      MQTT_URL: mqtt://mosquitto:1883
+    ports:
+      - '8080:8080'
+    depends_on:
+      - mosquitto
+      - safety-policy-service
+  telemetry-gateway:
+    build:
+      context: .
+      dockerfile: edge/Dockerfile
+    command: ["uvicorn", "edge.telemetry_gateway.app:app", "--host", "0.0.0.0", "--port", "8081"]
+    environment:
+      APP_ENV: development
+      SITE_ID: alpha-site
+      MQTT_URL: mqtt://mosquitto:1883
+    ports:
+      - '8081:8081'
+    volumes:
+      - telemetry_data:/app/var/mcap
+  ota-agent:
+    build:
+      context: .
+      dockerfile: edge/Dockerfile
+    command: ["uvicorn", "edge.ota_agent.app:app", "--host", "0.0.0.0", "--port", "8082"]
+    environment:
+      APP_ENV: development
+      SITE_ID: alpha-site
+      MQTT_URL: mqtt://mosquitto:1883
+    ports:
+      - '8082:8082'
+    depends_on:
+      - orchestrator
+  safety-policy-service:
+    build:
+      context: .
+      dockerfile: edge/Dockerfile
+    command: ["uvicorn", "edge.safety_policy_service.app:app", "--host", "0.0.0.0", "--port", "8083"]
+    environment:
+      APP_ENV: development
+      SITE_ID: alpha-site
+      MQTT_URL: mqtt://mosquitto:1883
+    ports:
+      - '8083:8083'
+volumes:
+  telemetry_data:

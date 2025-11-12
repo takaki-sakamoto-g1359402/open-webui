@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "telemetry.v1.RobotState",
+  "title": "RobotState",
+  "type": "object",
+  "required": ["robot_id", "pose", "battery", "mode", "safety_token", "timestamp"],
+  "properties": {
+    "robot_id": {"type": "string"},
+    "pose": {
+      "type": "object",
+      "required": ["x", "y", "theta"],
+      "properties": {
+        "x": {"type": "number"},
+        "y": {"type": "number"},
+        "theta": {"type": "number"}
+      }
+    },
+    "battery": {"type": "number", "minimum": 0, "maximum": 100},
+    "mode": {"type": "string", "enum": ["AUTO", "MANUAL", "SAFE_HALT", "ERROR"]},
+    "safety_token": {"type": "string"},
+    "timestamp": {"type": "string", "format": "date-time"}
+  }
+}
