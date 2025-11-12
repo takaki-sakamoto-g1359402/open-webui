@@ -1,0 +1,204 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: edge-box
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orchestrator
+  namespace: edge-box
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orchestrator
+  template:
+    metadata:
+      labels:
+        app: orchestrator
+    spec:
+      containers:
+        - name: orchestrator
+          image: edge-box/orchestrator:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: APP_ENV
+              value: development
+            - name: SITE_ID
+              value: alpha-site
+            - name: MQTT_URL
+              value: mqtt://mosquitto.edge-box:1883
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orchestrator
+  namespace: edge-box
+spec:
+  selector:
+    app: orchestrator
+  ports:
+    - port: 8080
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: telemetry-gateway
+  namespace: edge-box
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: telemetry-gateway
+  template:
+    metadata:
+      labels:
+        app: telemetry-gateway
+    spec:
+      containers:
+        - name: telemetry-gateway
+          image: edge-box/telemetry-gateway:latest
+          env:
+            - name: APP_ENV
+              value: development
+            - name: SITE_ID
+              value: alpha-site
+            - name: MQTT_URL
+              value: mqtt://mosquitto.edge-box:1883
+          ports:
+            - containerPort: 8081
+          volumeMounts:
+            - name: telemetry-data
+              mountPath: /app/var/mcap
+      volumes:
+        - name: telemetry-data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: telemetry-gateway
+  namespace: edge-box
+spec:
+  selector:
+    app: telemetry-gateway
+  ports:
+    - port: 8081
+      targetPort: 8081
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ota-agent
+  namespace: edge-box
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ota-agent
+  template:
+    metadata:
+      labels:
+        app: ota-agent
+    spec:
+      containers:
+        - name: ota-agent
+          image: edge-box/ota-agent:latest
+          env:
+            - name: APP_ENV
+              value: development
+            - name: SITE_ID
+              value: alpha-site
+            - name: MQTT_URL
+              value: mqtt://mosquitto.edge-box:1883
+          ports:
+            - containerPort: 8082
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ota-agent
+  namespace: edge-box
+spec:
+  selector:
+    app: ota-agent
+  ports:
+    - port: 8082
+      targetPort: 8082
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: safety-policy-service
+  namespace: edge-box
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: safety-policy-service
+  template:
+    metadata:
+      labels:
+        app: safety-policy-service
+    spec:
+      containers:
+        - name: safety-policy-service
+          image: edge-box/safety-policy-service:latest
+          env:
+            - name: APP_ENV
+              value: development
+            - name: SITE_ID
+              value: alpha-site
+            - name: MQTT_URL
+              value: mqtt://mosquitto.edge-box:1883
+          ports:
+            - containerPort: 8083
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: safety-policy-service
+  namespace: edge-box
+spec:
+  selector:
+    app: safety-policy-service
+  ports:
+    - port: 8083
+      targetPort: 8083
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mosquitto
+  namespace: edge-box
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mosquitto
+  template:
+    metadata:
+      labels:
+        app: mosquitto
+    spec:
+      containers:
+        - name: mosquitto
+          image: eclipse-mosquitto:2.0.18
+          ports:
+            - containerPort: 1883
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mosquitto
+  namespace: edge-box
+spec:
+  selector:
+    app: mosquitto
+  ports:
+    - port: 1883
+      targetPort: 1883

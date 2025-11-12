@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "telemetry.v1.NetworkStat",
+  "title": "NetworkStat",
+  "type": "object",
+  "required": ["link_name", "uplink_bps", "downlink_bps", "packet_loss", "timestamp"],
+  "properties": {
+    "link_name": {"type": "string"},
+    "uplink_bps": {"type": "number", "minimum": 0},
+    "downlink_bps": {"type": "number", "minimum": 0},
+    "packet_loss": {"type": "number", "minimum": 0, "maximum": 100},
+    "timestamp": {"type": "string", "format": "date-time"}
+  }
+}

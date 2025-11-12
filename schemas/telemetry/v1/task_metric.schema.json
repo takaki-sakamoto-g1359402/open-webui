@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "telemetry.v1.TaskMetric",
+  "title": "TaskMetric",
+  "type": "object",
+  "required": ["task_id", "robot_id", "latency_ms", "result", "near_miss", "timestamp"],
+  "properties": {
+    "task_id": {"type": "string"},
+    "robot_id": {"type": "string"},
+    "latency_ms": {"type": "number", "minimum": 0},
+    "result": {"type": "string", "enum": ["SUCCESS", "FAILED", "CANCELLED"]},
+    "near_miss": {"type": "boolean"},
+    "timestamp": {"type": "string", "format": "date-time"}
+  }
+}

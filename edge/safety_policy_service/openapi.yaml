@@ -1,0 +1,121 @@
+openapi: 3.0.3
+info:
+  title: safety-policy-service
+  version: 0.1.0
+paths:
+  /healthz:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: OK
+  /policies:
+    get:
+      summary: List active policies
+      responses:
+        '200':
+          description: Policies
+  /permits:
+    post:
+      summary: Request motion permit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PermitRequest'
+      responses:
+        '200':
+          description: Permit granted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermitResponse'
+        '403':
+          description: Permit denied
+  /throttles:
+    post:
+      summary: Request speed throttle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ThrottleRequest'
+      responses:
+        '200':
+          description: Speed recommendation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThrottleResponse'
+        '403':
+          description: Zone not permitted
+components:
+  schemas:
+    Mission:
+      type: object
+      properties:
+        type:
+          type: string
+        target:
+          type: string
+      required: [type, target]
+    Constraints:
+      type: object
+      properties:
+        zone:
+          type: string
+        speed_limit:
+          type: number
+        time_window:
+          type: object
+        permit_class:
+          type: string
+      required: [zone, speed_limit]
+    KPITargets:
+      type: object
+      properties:
+        latency_ms:
+          type: integer
+        near_miss_rate:
+          type: number
+      required: [latency_ms, near_miss_rate]
+    PermitRequest:
+      type: object
+      properties:
+        task_id:
+          type: string
+        mission:
+          $ref: '#/components/schemas/Mission'
+        constraints:
+          $ref: '#/components/schemas/Constraints'
+        kpi_targets:
+          $ref: '#/components/schemas/KPITargets'
+      required: [task_id, mission, constraints, kpi_targets]
+    PermitResponse:
+      type: object
+      properties:
+        permit_token:
+          type: string
+        expires_at:
+          type: number
+      required: [permit_token, expires_at]
+    ThrottleRequest:
+      type: object
+      properties:
+        robot_id:
+          type: string
+        zone:
+          type: string
+        human_distance_m:
+          type: number
+      required: [robot_id, zone, human_distance_m]
+    ThrottleResponse:
+      type: object
+      properties:
+        speed_limit:
+          type: number
+        reason:
+          type: string
+      required: [speed_limit, reason]

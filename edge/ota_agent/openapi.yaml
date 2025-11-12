@@ -1,0 +1,90 @@
+openapi: 3.0.3
+info:
+  title: ota-agent
+  version: 0.1.0
+paths:
+  /healthz:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: OK
+  /updates/stage:
+    post:
+      summary: Stage OTA update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StageRequest'
+      responses:
+        '200':
+          description: staged
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+        '409':
+          description: duplicate version
+  /updates/{version}/promote:
+    post:
+      summary: Promote staged update
+      parameters:
+        - in: path
+          name: version
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: promoted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+        '404':
+          description: not found
+  /updates/{version}/rollback:
+    post:
+      summary: Roll back update
+      parameters:
+        - in: path
+          name: version
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: rolled back
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+        '404':
+          description: not found
+components:
+  schemas:
+    StageRequest:
+      type: object
+      properties:
+        version:
+          type: string
+        ring:
+          type: string
+          enum: [RING_CANARY, RING_PILOT, RING_MAIN]
+        package_url:
+          type: string
+        sha256:
+          type: string
+      required: [version, ring, package_url, sha256]
+    HealthStatus:
+      type: object
+      properties:
+        version:
+          type: string
+        state:
+          type: string
+        updated_at:
+          type: number
+      required: [version, state, updated_at]
