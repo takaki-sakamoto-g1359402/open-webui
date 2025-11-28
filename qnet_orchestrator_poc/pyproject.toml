@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "qnet-orchestrator-poc"
+version = "0.1.0"
+description = "QNet-aware Hybrid AI Orchestrator PoC"
+authors = [{name = "OpenAI", email = "dev@example.com"}]
+requires-python = ">=3.11"
+dependencies = [
+    "networkx>=3.1",
+    "numpy>=1.24",
+    "pytest>=7.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["qnet*"]
