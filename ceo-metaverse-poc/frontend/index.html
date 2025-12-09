@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>CEO Metaverse Lobby (PoC)</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+      body { font-family: Inter, Arial, sans-serif; margin: 0; background: #0b132b; color: #f5f6fa; }
+      header { padding: 16px; background: #1c2541; display: flex; justify-content: space-between; align-items: center; }
+      nav a { margin-right: 12px; color: #8bd3e6; cursor: pointer; }
+      .panel { margin: 16px; padding: 16px; border-radius: 12px; background: #1c2541; box-shadow: 0 4px 12px rgba(0,0,0,0.25); }
+      .flex { display: flex; gap: 12px; flex-wrap: wrap; }
+      .card { padding: 12px; background: #3a506b; border-radius: 10px; min-width: 220px; }
+      button { background: #5bc0be; border: none; color: #0b132b; padding: 8px 12px; border-radius: 8px; cursor: pointer; }
+      input, textarea { width: 100%; padding: 8px; margin-top: 4px; border-radius: 6px; border: 1px solid #3a506b; background: #0b132b; color: #f5f6fa; }
+      .chat-box { height: 180px; overflow: auto; background: #0b132b; padding: 8px; border-radius: 8px; margin-top: 8px; }
+      .badge { background: #8bd3e6; color: #0b132b; padding: 2px 6px; border-radius: 6px; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const API_BASE = 'http://localhost:4060';
+      const identityHeader = { 'x-cf-exec-identity': JSON.stringify({ id: 'u1' }) };
+
+      function useFetch(url, deps = []) {
+        const [data, setData] = React.useState(null);
+        React.useEffect(() => {
+          fetch(url, { headers: identityHeader })
+            .then((r) => r.json())
+            .then(setData)
+            .catch((err) => console.error(err));
+        }, deps);
+        return data;
+      }
+
+      function Lobby({ onNavigate }) {
+        const me = useFetch(`${API_BASE}/api/users/me`);
+        const insights = useFetch(`${API_BASE}/api/lobby/insights`, []);
+        return (
+          <div className="panel">
+            <h2>Executive Lobby</h2>
+            {me && (
+              <div className="card">
+                <strong>{me.currentUser.name}</strong> — {me.currentUser.role} @ {me.currentUser.company}<br />
+                Reputation: {me.currentUser.reputationScore} — Access: <span className="badge">{me.currentUser.accessLevel}</span>
+              </div>
+            )}
+            {insights && (
+              <div className="flex" style={{ marginTop: 12 }}>
+                <div className="card">
+                  <div>Most frequent interaction:</div>
+                  <strong>{insights.mostFrequentInteraction ? insights.mostFrequentInteraction[0] : 'N/A'}</strong>
+                </div>
+                <div className="card">
+                  <div>Top active room:</div>
+                  <strong>{insights.topActiveRoom ? insights.topActiveRoom.name : 'N/A'}</strong>
+                </div>
+                <div className="card">
+                  <div>Executives online:</div>
+                  <strong>{insights.totalExecutivesOnline}</strong>
+                </div>
+              </div>
+            )}
+            <nav style={{ marginTop: 16 }}>
+              <a onClick={() => onNavigate('main')}>Main Floor</a>
+              <a onClick={() => onNavigate('rooms')}>Private Rooms</a>
+              <a onClick={() => onNavigate('games')}>Game / MMO Hub</a>
+            </nav>
+          </div>
+        );
+      }
+
+      function Chat({ roomId }) {
+        const [messages, setMessages] = React.useState([]);
+        const [text, setText] = React.useState('');
+        const socketRef = React.useRef();
+        React.useEffect(() => {
+          const ws = new WebSocket(
+            `${API_BASE.replace('http', 'ws')}/ws/chat?identity=${encodeURIComponent(identityHeader['x-cf-exec-identity'])}${
+              roomId ? `&roomId=${roomId}` : ''
+            }`
+          );
+          socketRef.current = ws;
+          ws.onmessage = (evt) => setMessages((m) => [...m.slice(-20), JSON.parse(evt.data)]);
+          return () => ws.close();
+        }, [roomId]);
+        return (
+          <div>
+            <div className="chat-box">
+              {messages.map((m, idx) => (
+                <div key={idx}>
+                  {m.system ? <em>{m.message}</em> : (
+                    <>
+                      <strong>{m.from?.name || 'system'}</strong>: {m.message}
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!text || !socketRef.current) return;
+                socketRef.current.send(JSON.stringify({ message: text }));
+                setText('');
+              }}
+            >
+              <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Say something" />
+            </form>
+          </div>
+        );
+      }
+
+      function MainFloor() {
+        const presence = useFetch(`${API_BASE}/api/main-floor/presence`, []);
+        return (
+          <div className="panel">
+            <h3>Main Floor — Global Chat</h3>
+            <div className="flex">
+              {presence?.online.map((u) => (
+                <div key={u.id} className="card">
+                  <strong>{u.name}</strong> <span className="badge">{u.accessLevel}</span>
+                  <div>{u.company}</div>
+                  <small>Last seen: {u.lastSeen}</small>
+                </div>
+              ))}
+            </div>
+            <Chat />
+          </div>
+        );
+      }
+
+      function PrivateRooms() {
+        const [name, setName] = React.useState('');
+        const [description, setDescription] = React.useState('');
+        const [inviteMap, setInviteMap] = React.useState({});
+        const [rooms, setRooms] = React.useState([]);
+
+        const loadRooms = () =>
+          fetch(`${API_BASE}/api/rooms`, { headers: identityHeader })
+            .then((r) => r.json())
+            .then((data) => setRooms(data.rooms));
+
+        React.useEffect(loadRooms, []);
+
+        const createRoom = () => {
+          fetch(`${API_BASE}/api/rooms`, {
+            method: 'POST',
+            headers: { ...identityHeader, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, description })
+          })
+            .then((r) => r.json())
+            .then(() => {
+              setName('');
+              setDescription('');
+              loadRooms();
+            });
+        };
+
+        const invite = (roomId, userId) => {
+          fetch(`${API_BASE}/api/rooms/${roomId}/invite`, {
+            method: 'POST',
+            headers: { ...identityHeader, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId })
+          }).then(loadRooms);
+        };
+
+        return (
+          <div className="panel">
+            <h3>Private Rooms</h3>
+            <div className="card">
+              <input placeholder="Room name" value={name} onChange={(e) => setName(e.target.value)} />
+              <textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} />
+              <button onClick={createRoom}>Create room</button>
+            </div>
+            <div className="flex" style={{ marginTop: 12 }}>
+              {rooms.map((room) => (
+                <div key={room.id} className="card" style={{ flex: 1 }}>
+                  <strong>{room.name}</strong>
+                  <div>{room.description}</div>
+                  <div>Owner: {room.ownerId}</div>
+                  <div>Invitees: {room.invitees.join(', ')}</div>
+                  <input
+                    placeholder="Invite user id (u1/u2/u3)"
+                    value={inviteMap[room.id] || ''}
+                    onChange={(e) => setInviteMap({ ...inviteMap, [room.id]: e.target.value })}
+                  />
+                  <button onClick={() => invite(room.id, inviteMap[room.id])}>Send invite</button>
+                  <div style={{ marginTop: 8 }}>
+                    <Chat roomId={room.id} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      }
+
+      function GameHub() {
+        const data = useFetch(`${API_BASE}/api/hub/games`, []);
+        const launch = (id) => {
+          fetch(`${API_BASE}/api/hub/games/${id}/launch`, { method: 'POST', headers: identityHeader })
+            .then((r) => r.json())
+            .then((resp) => {
+              alert(`Launching ${resp.launch} (event ${resp.eventId})`);
+            });
+        };
+        return (
+          <div className="panel">
+            <h3>Game / MMO Hub</h3>
+            <div className="flex">
+              {data?.miniGames.map((g) => (
+                <div key={g.id} className="card">
+                  <strong>{g.name}</strong>
+                  <div>{g.description}</div>
+                  <button onClick={() => launch(g.id)}>Launch mini-game</button>
+                </div>
+              ))}
+              {data?.externalLinks.map((g) => (
+                <div key={g.id} className="card">
+                  <strong>{g.label}</strong>
+                  <div>{g.url}</div>
+                  <button onClick={() => launch(g.id)}>Open link</button>
+                </div>
+              ))}
+            </div>
+            <p style={{ marginTop: 12 }}>
+              External game launch URLs intentionally use schemes like <code>minecraft://</code> or <code>steam://run/APPID</code> to show
+              how native clients could be opened from the hub.
+            </p>
+          </div>
+        );
+      }
+
+      function App() {
+        const [view, setView] = React.useState('lobby');
+        return (
+          <>
+            <header>
+              <h1>Executive-Only Virtual World Hub</h1>
+              <div>Behind Cloudflare Zero-Trust (mocked header)</div>
+            </header>
+            {view === 'lobby' && <Lobby onNavigate={setView} />}
+            {view === 'main' && <MainFloor />}
+            {view === 'rooms' && <PrivateRooms />}
+            {view === 'games' && <GameHub />}
+          </>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+  </body>
+</html>
