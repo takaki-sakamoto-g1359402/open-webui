@@ -1,0 +1,9 @@
+robots:
+  - robot_id: humanoid-1
+    max_velocity: 1.0
+    payload_capacity: 10.0
+  - robot_id: humanoid-2
+    max_velocity: 1.0
+    payload_capacity: 10.0
+adapter: mock
+loop_interval: 1.0

@@ -7,3 +7,6 @@ ruff
 mypy
 pyyaml
 pandas
+fastapi
+uvicorn
+pydantic
