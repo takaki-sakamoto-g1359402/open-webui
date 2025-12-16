@@ -61,3 +61,37 @@ Docker を利用する場合は提供されている `Dockerfile` をビルド�
 ## ライセンス
 
 [Apache-2.0](LICENSE)
+
+## Humanoid Fleet Management PoC
+
+This repository now includes a minimal, extensible **Humanoid Fleet Management** loop for space-age humanoid robots. It couples a toy digital twin with a mock real-world adapter to demonstrate automated V→R→V cycles.
+
+### Quickstart
+
+```bash
+# install lightweight dependencies for the PoC
+pip install -r requirements.txt
+
+# run the unit tests
+pytest tests/test_models.py tests/test_orchestrator.py
+
+# start the HTTP API
+uvicorn api.server:app --reload
+
+# run a short demo loop (three cycles)
+python - <<'PY'
+from fleet_core.models import RobotSpec
+from fleet_core.orchestrator import Orchestrator
+from real_r.adapters.mock import MockRealWorldAdapter
+from sim_v.env import VirtualEnv
+
+specs = [RobotSpec(robot_id=f"demo-{i}", max_velocity=1.0, payload_capacity=5.0) for i in range(2)]
+env = VirtualEnv(specs)
+orchestrator = Orchestrator(env=env, adapter=MockRealWorldAdapter(env))
+for _ in range(3):
+    state = orchestrator.run_cycle()
+    print({r.robot_id: (r.position, r.status) for r in state.robots})
+PY
+```
+
+The loop writes persistent JSONL logs to `runs/fleet_loop.jsonl` and the architecture is documented in `docs/overview.md`.
