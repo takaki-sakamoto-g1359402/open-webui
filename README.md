@@ -1,63 +1,45 @@
-# swarm_ew — SITL-Only Swarm Early Warning Research Platform
+# RV-Loop Lab
 
-> **研究・教育用シミュレーション（SITL）に限定して利用してください。実機禁止・兵器化禁止・監視濫用禁止・人間による承認（HITL）必須です。**
+Minimal but extensible proof-of-concept for a Real-Virtual feedback loop.
 
-`swarm_ew` は ROS 2 Humble と Gazebo を前提とした非武装・非威嚇の早期検知研究プラットフォームです。すべての活動はシミュレーション内で完結し、強制的なジオフェンス、速度/加速度上限、安全距離、フェイルセーフ、およびログ監査の整備を前提に設計されています。
+## Setup
+1. Install dependencies (project already pins FastAPI/SQLAlchemy/etc via `pyproject.toml`). If using `pip`:
+   ```bash
+   pip install -e .
+   ```
 
-## Quickstart (SITL Only)
+2. Initialize the database (created automatically on first run):
+   ```bash
+   python - <<'PY'
+   from rvloop.models import init_db
+   init_db()
+   print("DB ready")
+   PY
+   ```
 
+## Run the API
 ```bash
-make setup
-make build
-make test
-# 以降のマイルストーンで有効化予定
-make sim
+uvicorn rvloop.api:app --reload
+```
+Visit http://localhost:8000/ for the tiny dashboard.
+
+## Send telemetry
+Use the simulator to send a few telemetry events:
+```bash
+python -m rvloop.simulator --count 3
+```
+To call the processing loop in-process (no HTTP):
+```bash
+python -m rvloop.simulator --in-process --count 3
 ```
 
-- `make setup` — Python 仮想環境と依存関係を初期化します。
-- `make build` — ROS 2 パッケージのコロンビルドを行います（現時点ではスケルトンのため no-op です）。
-- `make test` — `pytest` によるテストラン（現時点ではプレースホルダ）。
-- `make sim` / `make eval` — 今後のマイルストーンで実装予定のワークフローです。
+## Security signing (optional)
+Telemetry payloads can include a `signature` field containing the hex-encoded result of `rvloop.security.sign(json_bytes)`. When provided, signatures are verified and invalid payloads are rejected with HTTP 400.
 
-## Repository Layout
+## Quantum sandbox
+Set `RVLOOP_QUANTUM=1` to enable the quantum sandbox perturbation. If Qiskit is not installed, a deterministic fallback is used to keep the build stable.
 
+## Tests
+```bash
+pytest
 ```
-packages/
-  ew_agent/        # 個別エージェント制御ノード（SITLのみ）
-  ew_coordinator/  # 群制御・タスク配分ノード（SITLのみ）
-  ew_sim/          # Gazebo ベースのシミュレーション統合
-  ew_eval/         # オフライン評価ワークフロー
-  ew_msgs/         # 共有メッセージ定義プレースホルダ
-src/common/
-  safety_guard.py  # ジオフェンスやHITL確認の共通実装 (今後追加)
-```
-
-`docs/` ディレクトリには初期ドラフトの倫理・安全関連ドキュメント（ETHICS, COMPLIANCE, LIMITATIONS, SAFETY_CASE）が含まれます。リポジトリに変更を加える際は、これらの文書を常に参照し、必要に応じて更新してください。
-
-## Development Environment
-
-- Python 3.10
-- ROS 2 Humble + Gazebo (SITL)
-- 依存 Python ライブラリ: `numpy`, `scipy`, `networkx`, `matplotlib`, `pytest`, `ruff`, `mypy`, `pyyaml`, `pandas`
-
-Docker を利用する場合は提供されている `Dockerfile` をビルドすることで、SITL 研究用の依存関係が整ったベースイメージを作成できます。実機へのデプロイや遠隔操作は一切サポートしません。
-
-## Safety, Ethics, and Compliance
-
-- [docs/ETHICS.md](docs/ETHICS.md) — 倫理指針
-- [docs/COMPLIANCE.md](docs/COMPLIANCE.md) — 準拠事項チェックリスト
-- [docs/LIMITATIONS.md](docs/LIMITATIONS.md) — 既知の制約と仮定
-- [docs/SAFETY_CASE.md](docs/SAFETY_CASE.md) — 安全性主張アウトライン
-
-これらの文書はシミュレーション専用の安全運用を保証するためのベースラインです。危険な変更要求があった場合は、HITL レビューにより拒否される場合があります。
-
-## Continuous Integration
-
-`.github/workflows/ci.yml` では以下を実行します。
-
-- Ruff / mypy / pytest による lint・型チェック・単体テスト
-- ROS 2 Humble 環境での `colcon build --packages-select "ew_*"`
-
-## ライセンス
-
-[Apache-2.0](LICENSE)
