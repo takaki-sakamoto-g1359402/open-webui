@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+<head>
+    <title>RV-Loop Lab</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; }
+        table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
+        th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; }
+        th { background: #f4f4f4; }
+        pre { background: #f9f9f9; padding: 0.5rem; }
+    </style>
+</head>
+<body>
+    <h1>RV-Loop Lab Dashboard</h1>
+    <section>
+        <h2>Recent Runs</h2>
+        <table>
+            <thead>
+                <tr><th>ID</th><th>Time</th><th>Source</th><th>Selected Plan</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+                {% for run in runs %}
+                <tr>
+                    <td>{{ run.id }}</td>
+                    <td>{{ run.created_at }}</td>
+                    <td>{{ run.source_id }}</td>
+                    <td>{{ run.selected_plan }}</td>
+                    <td>{{ run.send_status }}</td>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        <strong>Twin before:</strong>
+                        <pre>{{ dump_json(run.twin_before) }}</pre>
+                        <strong>Twin after:</strong>
+                        <pre>{{ dump_json(run.twin_after) }}</pre>
+                        <strong>Candidates:</strong>
+                        <pre>{{ dump_json([{"name": c.name, "params": c.params, "score": c.score} for c in run.candidates]) }}</pre>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+    <section>
+        <h2>Latest Twin</h2>
+        {% if twin %}
+            <pre>{{ dump_json(twin) }}</pre>
+        {% else %}
+            <p>No twin data yet.</p>
+        {% endif %}
+    </section>
+</body>
+</html>
