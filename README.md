@@ -34,6 +34,61 @@ src/common/
 
 `docs/` ディレクトリには初期ドラフトの倫理・安全関連ドキュメント（ETHICS, COMPLIANCE, LIMITATIONS, SAFETY_CASE）が含まれます。リポジトリに変更を加える際は、これらの文書を常に参照し、必要に応じて更新してください。
 
+## Policy-Governed Autonomous Agent (Sense→Think→Act) MVP
+
+This repository also ships a small FastAPI-based proof-of-concept for a policy-governed autonomous agent with PQC readiness checks and a proof-of-personhood gate.
+
+### Setup & Run
+
+```bash
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+# Dashboard: http://localhost:8000/dashboard
+```
+
+### API Endpoints
+
+- `POST /events` — ingest an event `{payload, source?}`
+- `POST /knowledge/fact` — store `{key, value, source?}`
+- `POST /knowledge/doc` — store `{title, body}`
+- `POST /agent/run` — process pending events, optional `{pop_token}`
+- `GET /dashboard` — simple HTML of events/decisions/actions
+- `GET /pop/challenge` → `{challenge}`
+- `POST /pop/verify` with `{code}` → `{pop_token}` if valid
+
+### CLI helpers
+
+```bash
+python -m app.cli seed-demo        # load demo docs/events
+python -m app.cli run-once --text "pqcチェックして"   # create event and run once
+python -m app.cli run-loop --interval 5               # poll inbox/queue
+```
+
+The CLI also treats `./inbox/*.md|*.txt` files as events and removes them after ingestion.
+
+### Demo scenario
+
+1. Seed data: `python -m app.cli seed-demo`
+2. Run the agent without proof-of-personhood: `python -m app.cli run-once --text "task: write report"` → file writes are denied by policy.
+3. Request a challenge `GET /pop/challenge`, verify via `POST /pop/verify {"code": "..."}` to obtain `pop_token`.
+4. Re-run with the token: `python -m app.cli run-once --text "pqcチェックして" --pop-token <token>` → allowed to write `./out/report.md`.
+
+### Policy basics (config/policy.yaml)
+
+- Default deny unless a tool is allow-listed.
+- `sensitive_tools` (e.g., `file.write`, `http.get`) require a valid `pop_token`.
+- File writes are limited to configured allowlisted paths (default: `./out`).
+- HTTP GET requests are limited to allowlisted domains (default: `example.com`).
+
+### PQC readiness helper
+
+`pqc.scan` detects keywords such as RSA, ECDSA, Ed25519, X25519, TLS1.2/1.3 and `pqc.checklist` returns a concise Japanese migration checklist for educational use.
+
+### Extending
+
+- Add new tools to `config/policy.yaml` allowlist, then implement under `app/policy_agent/tools.py`.
+- Replace the rule-based planner in `app/policy_agent/planner.py` with an LLM-backed planner while keeping policy checks intact.
+
 ## Development Environment
 
 - Python 3.10

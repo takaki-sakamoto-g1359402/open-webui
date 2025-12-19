@@ -1,0 +1,18 @@
+tools:
+  allow:
+    - knowledge.search
+    - pqc.scan
+    - pqc.checklist
+    - file.write
+    - http.get
+    - notify.console
+  deny: []
+paths:
+  allow:
+    - ./out
+network:
+  allow_domains:
+    - example.com
+sensitive_tools:
+  - file.write
+  - http.get

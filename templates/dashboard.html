@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head><title>Agent Dashboard</title></head>
+<body>
+<h1>Policy-Governed Agent Dashboard</h1>
+<section>
+  <h2>Events</h2>
+  <ul>
+  {% for e in events %}
+    <li>#{{e.id}} [{{e.status}}] {{e.payload}} ({{e.ts}})</li>
+  {% endfor %}
+  </ul>
+</section>
+<section>
+  <h2>Decisions</h2>
+  <ul>
+  {% for d in decisions %}
+    <li>#{{d.id}} event {{d.event_id}} -> {{d.policy_result}} ({{d.ts}})</li>
+  {% endfor %}
+  </ul>
+</section>
+<section>
+  <h2>Actions</h2>
+  <ul>
+  {% for a in actions %}
+    <li>#{{a.id}} {{a.tool_name}} {{a.status}} {{a.reason}} ({{a.ts}})</li>
+  {% endfor %}
+  </ul>
+</section>
+</body>
+</html>

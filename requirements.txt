@@ -7,3 +7,8 @@ ruff
 mypy
 pyyaml
 pandas
+fastapi
+uvicorn[standard]
+jinja2
+requests
+orjson
