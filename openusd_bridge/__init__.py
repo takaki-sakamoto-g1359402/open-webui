@@ -1,0 +1,1 @@
+"""Minimal OpenUSD bridge utilities."""
