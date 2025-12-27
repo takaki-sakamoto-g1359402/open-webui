@@ -128,6 +128,9 @@ dependencies = [
     "firecrawl-py==1.12.0",
 
     "gcp-storage-emulator>=2024.8.3",
+
+    "usd-core>=24.08",
+    "usd-core-tools>=24.08; platform_system != 'Windows'",
 ]
 readme = "README.md"
 requires-python = ">= 3.11, < 3.13.0a1"
@@ -144,6 +147,7 @@ classifiers = [
 
 [project.scripts]
 open-webui = "open_webui:app"
+openusd-bridge = "openusd_bridge.cli:main"
 
 [build-system]
 requires = ["hatchling"]
