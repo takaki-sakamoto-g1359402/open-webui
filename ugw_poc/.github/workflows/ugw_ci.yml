@@ -1,0 +1,22 @@
+name: UGW PoC CI
+
+on:
+  push:
+    paths:
+      - "ugw_poc/**"
+  pull_request:
+    paths:
+      - "ugw_poc/**"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r ugw_poc/requirements.txt
+      - run: pytest ugw_poc/ugw/tests
+      - run: bash ugw_poc/scripts/security_scan.sh
+      - run: bash ugw_poc/scripts/generate_sbom.sh
