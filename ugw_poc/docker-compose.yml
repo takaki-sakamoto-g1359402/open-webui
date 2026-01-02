@@ -1,0 +1,25 @@
+version: "3.9"
+services:
+  opa:
+    image: openpolicyagent/opa:1.4.0
+    command: ["run", "--server", "--addr", "0.0.0.0:8181", "--authentication=token", "/policies/policies.rego"]
+    environment:
+      OPA_AUTHN_TOKEN: dev-opa-token
+    volumes:
+      - ./opa:/policies:ro
+    ports:
+      - "8181:8181"
+  app:
+    build: .
+    environment:
+      UGW_OPA_URL: http://opa:8181
+      UGW_OPA_TOKEN: dev-opa-token
+    volumes:
+      - ./data:/app/data
+      - ./artifact_store:/app/artifact_store
+      - ./evidence:/app/evidence
+      - ./keystore:/app/keystore
+    ports:
+      - "8000:8000"
+    depends_on:
+      - opa
