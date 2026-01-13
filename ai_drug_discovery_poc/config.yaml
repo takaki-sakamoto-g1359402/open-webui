@@ -1,0 +1,11 @@
+data_paths:
+  genomic_fasta: "data/genomes/example.fasta"
+  protein_fasta: "data/proteins/example.fasta"
+  molecule_csv: "data/molecules/example.csv"
+model_checkpoints:
+  evo2: "bionemo/evo2"
+  esm2: "facebook/esm2"
+  unimol: "dptech/unimol"
+  rfdiffusion: "rfdiffusion/base"
+  diffdock: "diffdock/base"
+output_dir: "outputs"
