@@ -2,6 +2,42 @@
 
 Minimal but extensible proof-of-concept for a Real-Virtual feedback loop.
 
+## System-3 Persistent Agent Prototype (PoC)
+This repository includes a minimal, runnable prototype of a System-3 “Persistent Agent” wrapper inspired by the Sophia framework. It runs offline with a SQLite-backed memory, rule-based models, and a mockable LLM interface.
+
+### Quickstart
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python main.py
+```
+
+### Example session
+```
+Task (or 'quit'): calculate 3+4*2
+
+Plan:
+- Compute the value
+  • Use calculator tool
+  • Report the result
+
+Tool Trace:
+- calc: 3+4*2 = 11
+
+Result:
+3+4*2 = 11
+
+System-3 Reflection:
+Completed task. Reward: {'extrinsic': 1.0, 'novelty': 0.6, 'mastery': 0.8, 'coherence': 0.4, 'efficiency': 0.7}
+```
+
+### CLI commands
+* `/identity` - show identity profile
+* `/memory <query>` - retrieve similar episode summaries
+* `/models` - show self/user models
+* `/reset` - clear the SQLite database (with confirmation)
+
 ## Setup
 1. Install dependencies (project already pins FastAPI/SQLAlchemy/etc via `pyproject.toml`). If using `pip`:
    ```bash
