@@ -1,0 +1,26 @@
+app:
+  host: 0.0.0.0
+  port: 8081
+  db_path: data/orchestrator.db
+
+security:
+  challenge_ttl_seconds: 300
+  approval_security_levels:
+    L4: ASL-3
+  env_vars:
+    AIOS_WEBAUTHN_HMAC_KEY: "set-in-environment"
+    AIOS_OTP_SECRET: "set-in-environment"
+    AIOS_PQC_PRIVATE_KEY: "set-in-environment"
+    AIOS_PQC_PUBLIC_KEY: "set-in-environment"
+
+policy:
+  action_rate_limit_per_hour: 12
+  external_rate_limit_per_hour: 6
+  finance_amount_threshold: 5000
+  finance_spike_multiplier: 1.5
+  allowlisted_recipient_domains:
+    - example.com
+    - customer.org
+    - trusted.test
+  blocked_tools:
+    - delete_production_data
