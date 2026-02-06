@@ -1,0 +1,10 @@
+governance:
+  invoice_amount_threshold: 10000
+  anomaly_threshold: 0.8
+  margin_floor: 0.2
+  sentiment_escalation_threshold: 0.75
+orchestrator:
+  poll_interval_seconds: 0.5
+  max_steps_per_event: 6
+database:
+  path: ai_orchestrator.db
