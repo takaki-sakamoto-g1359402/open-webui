@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Continuity Protocol</title>
+		<link rel="stylesheet" href="style.css" />
+	</head>
+	<body>
+		<div class="grain" aria-hidden="true"></div>
+		<main class="app">
+			<section id="title-screen" class="panel active">
+				<p class="eyebrow">MIND EMULATION TRIAL 07</p>
+				<h1>Continuity Protocol</h1>
+				<p class="intro">
+					A neural scan has produced multiple active copies of your mind. You have one short
+					session to decide which consciousness receives embodiment rights.
+				</p>
+				<div class="stats-grid muted">
+					<div><span>Session Window</span><strong>~2 minutes</strong></div>
+					<div><span>Active Copies</span><strong id="copy-count">4</strong></div>
+					<div><span>Persistence</span><strong>Local Save</strong></div>
+				</div>
+				<button id="start-btn" class="btn primary">Begin Session</button>
+				<button id="resume-btn" class="btn secondary hidden">Resume Last Session</button>
+			</section>
+
+			<section id="game-screen" class="panel">
+				<header class="topbar">
+					<div>
+						<p class="eyebrow">CASEFILE</p>
+						<h2 id="scene-title">-</h2>
+					</div>
+					<div class="status">
+						<p>Step <span id="step-indicator">1</span>/4</p>
+						<p>Continuity Confidence <span id="confidence">50</span>%</p>
+					</div>
+				</header>
+
+				<section class="card narrative">
+					<p id="scene-text"></p>
+				</section>
+
+				<section class="card copies">
+					<h3>Internal Chorus</h3>
+					<ul id="copy-voices"></ul>
+				</section>
+
+				<section class="choices" id="choices"></section>
+			</section>
+
+			<section id="results-screen" class="panel">
+				<p class="eyebrow">SESSION RESOLUTION</p>
+				<h2 id="ending-title"></h2>
+				<p id="ending-text"></p>
+				<section class="card">
+					<h3>Identity Ledger</h3>
+					<ul id="ledger"></ul>
+				</section>
+				<div class="results-actions">
+					<button id="restart-btn" class="btn primary">Run New Simulation</button>
+					<button id="clear-btn" class="btn secondary">Erase Save</button>
+				</div>
+			</section>
+		</main>
+
+		<script src="app.js"></script>
+	</body>
+</html>
