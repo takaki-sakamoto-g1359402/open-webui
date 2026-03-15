@@ -1,0 +1,16 @@
+{
+  "geographies": [
+    {"iso3": "KEN", "name": "Kenya", "region": "Sub-Saharan Africa"},
+    {"iso3": "NPL", "name": "Nepal", "region": "South Asia"}
+  ],
+  "observations": [
+    {"iso3": "KEN", "pillar": "poverty", "value": 61, "sourceOrganization": "United Nations SDG", "sourceDocumentTitle": "SDG Global Database 2024 Update", "sourceUrl": "https://unstats.un.org/sdgs/dataportal", "lastUpdated": "2024-09-20", "indicatorCode": "SDG.1.1.1", "year": 2023, "unit": "normalized_score"},
+    {"iso3": "KEN", "pillar": "health", "value": 58, "sourceOrganization": "WHO", "sourceDocumentTitle": "Tracking Universal Health Coverage 2023", "sourceUrl": "https://www.who.int/data/gho", "lastUpdated": "2024-06-15", "indicatorCode": "WHO.UHC.SCI", "year": 2023, "unit": "normalized_score"},
+    {"iso3": "KEN", "pillar": "education", "value": 72, "sourceOrganization": "UNESCO UIS", "sourceDocumentTitle": "UIS Education Indicators 2024", "sourceUrl": "https://uis.unesco.org", "lastUpdated": "2024-07-18", "indicatorCode": "UIS.LR.AG15T24", "year": 2023, "unit": "normalized_score"},
+    {"iso3": "KEN", "pillar": "child_protection", "value": 52, "sourceOrganization": "ILO", "sourceDocumentTitle": "Global Estimates of Child Labour 2024", "sourceUrl": "https://www.ilo.org", "lastUpdated": "2024-11-02", "indicatorCode": "ILO.CLAB.PCT", "year": 2023, "unit": "normalized_score"},
+    {"iso3": "NPL", "pillar": "poverty", "value": 67, "sourceOrganization": "World Bank", "sourceDocumentTitle": "World Development Indicators", "sourceUrl": "https://databank.worldbank.org/source/world-development-indicators", "lastUpdated": "2024-10-01", "indicatorCode": "SI.POV.DDAY", "year": 2023, "unit": "normalized_score"},
+    {"iso3": "NPL", "pillar": "health", "value": 62, "sourceOrganization": "WHO", "sourceDocumentTitle": "Tracking Universal Health Coverage 2023", "sourceUrl": "https://www.who.int/data/gho", "lastUpdated": "2024-06-15", "indicatorCode": "WHO.UHC.SCI", "year": 2023, "unit": "normalized_score"},
+    {"iso3": "NPL", "pillar": "education", "value": 70, "sourceOrganization": "UNESCO UIS", "sourceDocumentTitle": "UIS Education Indicators 2024", "sourceUrl": "https://uis.unesco.org", "lastUpdated": "2024-07-18", "indicatorCode": "UIS.LR.AG15T24", "year": 2023, "unit": "normalized_score"},
+    {"iso3": "NPL", "pillar": "child_protection", "value": 60, "sourceOrganization": "UNICEF", "sourceDocumentTitle": "UNICEF Global Child Well-being Dataset", "sourceUrl": "https://data.unicef.org", "lastUpdated": "2024-08-30", "indicatorCode": "UNICEF.CHILD.DEPRIV", "year": 2023, "unit": "normalized_score"}
+  ]
+}
