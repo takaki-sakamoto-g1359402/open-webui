@@ -1,0 +1,65 @@
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "realitybridge-core"
+version = "0.1.0"
+description = "Foundational scaffold for RealityBridge Core"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "OpenAI Codex" }]
+dependencies = [
+  "fastapi>=0.115,<1.0",
+  "uvicorn[standard]>=0.34,<1.0",
+  "pydantic>=2.10,<3.0",
+  "pydantic-settings>=2.7,<3.0",
+  "sqlalchemy>=2.0,<3.0",
+  "alembic>=1.14,<2.0",
+  "asyncpg>=0.30,<1.0",
+  "psycopg[binary]>=3.2,<4.0",
+  "redis[hiredis]>=5.2,<6.0",
+  "pyjwt>=2.10,<3.0",
+  "argon2-cffi>=23.1,<24.0",
+  "python-multipart>=0.0.18,<1.0",
+  "structlog>=24.4,<25.0",
+  "httpx>=0.28,<1.0",
+  "orjson>=3.10,<4.0",
+  "greenlet>=3.1,<4.0"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3,<9.0",
+  "pytest-asyncio>=0.25,<1.0",
+  "mypy>=1.14,<2.0",
+  "ruff>=0.9,<1.0",
+  "aiosqlite>=0.20,<1.0"
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["packages/core/src/realitybridge_core"]
+
+[tool.pytest.ini_options]
+pythonpath = ["packages/core/src", "."]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "N", "ASYNC", "RUF"]
+
+[tool.mypy]
+python_version = "3.11"
+plugins = []
+strict = true
+warn_unused_configs = true
+mypy_path = ["packages/core/src"]
+packages = ["realitybridge_core"]
+exclude = ["packages/core/alembic"]
+
+[[tool.mypy.overrides]]
+module = ["jwt.*", "redis.*"]
+ignore_missing_imports = true
