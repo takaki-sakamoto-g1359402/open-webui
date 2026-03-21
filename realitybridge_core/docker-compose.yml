@@ -32,7 +32,7 @@ services:
     env_file:
       - .env.example
     environment:
-      RB_DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/realitybridge
+      RB_DATABASE_URL: postgresql+psycopg://postgres:postgres@postgres:5432/realitybridge
       RB_REDIS_URL: redis://redis:6379/0
     command: ["uvicorn", "apps.api.main:app", "--host", "0.0.0.0", "--port", "8090"]
     ports:
@@ -50,7 +50,7 @@ services:
     env_file:
       - .env.example
     environment:
-      RB_DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/realitybridge
+      RB_DATABASE_URL: postgresql+psycopg://postgres:postgres@postgres:5432/realitybridge
       RB_REDIS_URL: redis://redis:6379/0
       RB_EVENT_CONSUMER_NAME: worker-compose
     command: ["python", "-m", "apps.worker.main"]

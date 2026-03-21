@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     api_host: str = "0.0.0.0"
     api_port: int = 8090
     database_url: str = Field(
-        default="postgresql+asyncpg://postgres:postgres@localhost:5432/realitybridge"
+        default="postgresql+psycopg://postgres:postgres@localhost:5432/realitybridge"
     )
     redis_url: str = "redis://localhost:6379/0"
     event_stream: str = "realitybridge.events"
@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     request_id_header: str = "x-request-id"
     simulation_mode: bool = True
     allow_device_execution: bool = False
+    enable_bootstrap: bool = False
     bootstrap_admin_email: str = "admin@realitybridge.local"
     bootstrap_admin_password: str = "ChangeMe123!"
 

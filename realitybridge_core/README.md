@@ -85,12 +85,22 @@ PYTHONPATH=packages/core/src:. uvicorn apps.api.main:app --host 0.0.0.0 --port 8
 
 ```bash
 cd realitybridge_core
-docker compose up --build
+docker compose up -d postgres redis
+docker compose run --rm api sh -lc 'cd packages/core && PYTHONPATH=src alembic upgrade head'
+docker compose up --build api worker
 ```
 
 ## Main flows to exercise
 
-### 1. Login as bootstrap admin
+### 1. Enable bootstrap only for local dev/test and get an admin token
+
+Set `RB_ENABLE_BOOTSTRAP=true` only in local development or tests. The endpoint returns `403` by default and should stay disabled in shared or deployed environments.
+
+```bash
+curl -s http://localhost:8090/api/v1/auth/bootstrap
+```
+
+### 2. Login as bootstrap admin
 
 ```bash
 curl -s http://localhost:8090/api/v1/auth/login \
@@ -98,7 +108,7 @@ curl -s http://localhost:8090/api/v1/auth/login \
   -d '{"email":"admin@realitybridge.local","password":"ChangeMe123!"}'
 ```
 
-### 2. Create a space
+### 3. Create a space
 
 ```bash
 curl -s http://localhost:8090/api/v1/spaces \
@@ -107,7 +117,7 @@ curl -s http://localhost:8090/api/v1/spaces \
   -d '{"name":"mission-control","description":"Ops space","metadata":{"region":"us-east"}}'
 ```
 
-### 3. Register an agent and submit a task
+### 4. Register an agent and submit a task
 
 ```bash
 curl -s http://localhost:8090/api/v1/agents \
@@ -121,7 +131,16 @@ curl -s http://localhost:8090/api/v1/tasks \
   -d '{"agent_id":"<agent-id>","kind":"task.coordinate","description":"Create a shift handoff summary","payload":{"risk":2}}'
 ```
 
-### 4. Simulate a device-oriented task
+### 5. Process a task manually only when needed
+
+The worker already consumes `task.submitted` events. Manual processing is mainly for operator recovery/debug flows. Re-processing a task after a run exists returns the existing run; invalid states return `409 Conflict`.
+
+```bash
+curl -s -X POST http://localhost:8090/api/v1/tasks/<task-id>/process \
+  -H "authorization: Bearer $TOKEN"
+```
+
+### 6. Simulate a device-oriented task
 
 ```bash
 curl -s http://localhost:8090/api/v1/tasks \
@@ -141,8 +160,11 @@ curl -s http://localhost:8090/api/v1/tasks \
 
 ## Safety notes
 
+- Database schema is expected to be managed by Alembic; the API no longer creates tables implicitly.
+- Bootstrap auth is disabled by default and must be explicitly enabled only in `development` or `test`.
 - Physical bridge execution is blocked by default.
 - Sensitive tasks are denied unless explicit future policy work relaxes them.
+- Device actions go through policy evaluation before any bridge execution attempt.
 - Device actuation is simulation only in this iteration.
 - Audit logging is included, but tamper-evident storage is deferred.
 

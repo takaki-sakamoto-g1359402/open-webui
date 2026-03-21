@@ -8,13 +8,14 @@ from typing import Any
 import orjson
 from redis import Redis
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from realitybridge_core.config import get_settings
 from realitybridge_core.db.session import SessionLocal
 from realitybridge_core.domain.models import EventCheckpoint, Task
 from realitybridge_core.logging import configure_logging
 from realitybridge_core.services.events import build_redis_client
-from realitybridge_core.services.tasks import TaskService
+from realitybridge_core.services.tasks import TaskProcessingConflict, TaskService
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
@@ -62,14 +63,25 @@ class EventWorker:
             session.commit()
         return True
 
-    def handle_event(self, session, event_id: str, payload: dict[str, Any]) -> None:
+    def handle_event(self, session: Session, event_id: str, payload: dict[str, Any]) -> None:
         event_type = payload["event_type"]
         logger.info("worker.event", extra={"extra": {"event_id": event_id, "event_type": event_type}})
         if event_type == "task.submitted":
             body = orjson.loads(payload["payload"])
             task = session.execute(select(Task).where(Task.id == body["task_id"])).scalar_one_or_none()
             if task is not None:
-                self.task_service.process_task(session, task)
+                try:
+                    process_result = self.task_service.process_task(session, task)
+                    if not process_result.created:
+                        logger.info(
+                            "worker.task.skip_existing_run",
+                            extra={"extra": {"task_id": task.id}},
+                        )
+                except TaskProcessingConflict as exc:
+                    logger.info(
+                        "worker.task.skip_conflict",
+                        extra={"extra": {"task_id": task.id, "reason": exc.message}},
+                    )
         checkpoint = EventCheckpoint(
             consumer_group=settings.event_consumer_group,
             consumer_name=settings.event_consumer_name,

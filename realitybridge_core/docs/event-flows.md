@@ -8,6 +8,7 @@
 - `policy.denied`
 - `task.executed`
 - `robot.action.requested`
+- `robot.action.blocked`
 - `robot.action.simulated`
 
 ## Task flow
@@ -17,8 +18,8 @@
 3. Worker consumes the event.
 4. Worker evaluates policy.
 5. Worker writes `PolicyDecision`.
-6. Worker persists `TaskRun`.
-7. Worker emits execution outcome event.
+6. Worker persists a single `TaskRun` per task attempt.
+7. Worker emits execution outcome events.
 
 ## Why Redis Streams
 

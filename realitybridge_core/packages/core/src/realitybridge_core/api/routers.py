@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from realitybridge_core.api.deps import DBSession, get_current_user, require_admin
-from realitybridge_core.config import get_settings
+from realitybridge_core.config import Settings, get_settings
 from realitybridge_core.domain.enums import AuditSeverity
 from realitybridge_core.domain.models import (
     Agent,
@@ -56,7 +56,7 @@ from realitybridge_core.services.audit import record_audit
 from realitybridge_core.services.auth import auth_service
 from realitybridge_core.services.bootstrap import bootstrap_defaults
 from realitybridge_core.services.events import DomainEvent
-from realitybridge_core.services.tasks import TaskService
+from realitybridge_core.services.tasks import TaskProcessingConflict, TaskService
 
 settings = get_settings()
 router = APIRouter()
@@ -77,8 +77,14 @@ def get_task_service(request: Request) -> TaskService:
     return request.app.state.task_service  # type: ignore[no-any-return]
 
 
+def bootstrap_allowed(active_settings: Settings) -> bool:
+    return active_settings.enable_bootstrap and active_settings.env in {"development", "test"}
+
+
 @auth_router.post("/bootstrap", response_model=TokenResponse, include_in_schema=False)
 def bootstrap(session: DBSession) -> TokenResponse:
+    if not bootstrap_allowed(settings):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Bootstrap is disabled.")
     bootstrap_defaults(session)
     session.commit()
     admin = session.execute(
@@ -138,7 +144,16 @@ def create_space(payload: SpaceCreate, session: DBSession, current_user: User = 
     space = Space(name=payload.name, description=payload.description, meta=payload.metadata, owner_id=current_user.id)
     session.add(space)
     session.flush()
-    record_audit(session, actor_type="user", actor_id=current_user.id, action="space.created", target_type="space", target_id=space.id, severity=AuditSeverity.INFO.value, details=payload.metadata)
+    record_audit(
+        session,
+        actor_type="user",
+        actor_id=current_user.id,
+        action="space.created",
+        target_type="space",
+        target_id=space.id,
+        severity=AuditSeverity.INFO.value,
+        details=payload.metadata,
+    )
     session.commit()
     return space
 
@@ -154,14 +169,28 @@ def create_session(payload: SessionCreate, session: DBSession, current_user: Use
     db_session = PresenceSession(space_id=payload.space_id, started_by_id=current_user.id, meta=payload.metadata)
     session.add(db_session)
     session.flush()
-    record_audit(session, actor_type="user", actor_id=current_user.id, action="session.created", target_type="session", target_id=db_session.id, severity=AuditSeverity.INFO.value)
+    record_audit(
+        session,
+        actor_type="user",
+        actor_id=current_user.id,
+        action="session.created",
+        target_type="session",
+        target_id=db_session.id,
+        severity=AuditSeverity.INFO.value,
+    )
     session.commit()
     return db_session
 
 
 @sessions_router.post("/{session_id}/participants", response_model=ParticipantRead, status_code=status.HTTP_201_CREATED)
 def add_participant(session_id: str, payload: ParticipantCreate, session: DBSession, current_user: User = Depends(get_current_user), task_service: TaskService = Depends(get_task_service)) -> Participant:
-    participant = Participant(session_id=session_id, subject_type=payload.subject_type.value, subject_id=payload.subject_id, role=payload.role.value, meta=payload.metadata)
+    participant = Participant(
+        session_id=session_id,
+        subject_type=payload.subject_type.value,
+        subject_id=payload.subject_id,
+        role=payload.role.value,
+        meta=payload.metadata,
+    )
     session.add(participant)
     session.flush()
     task_service.event_publisher.publish(
@@ -184,7 +213,13 @@ def list_sessions(session: DBSession, _: User = Depends(get_current_user)) -> li
 
 @twins_router.post("", response_model=DigitalTwinRead, status_code=status.HTTP_201_CREATED)
 def create_twin(payload: DigitalTwinCreate, session: DBSession, current_user: User = Depends(get_current_user), task_service: TaskService = Depends(get_task_service)) -> DigitalTwin:
-    twin = DigitalTwin(space_id=payload.space_id, name=payload.name, twin_type=payload.twin_type.value, source_ref=payload.source_ref, meta=payload.metadata)
+    twin = DigitalTwin(
+        space_id=payload.space_id,
+        name=payload.name,
+        twin_type=payload.twin_type.value,
+        source_ref=payload.source_ref,
+        meta=payload.metadata,
+    )
     session.add(twin)
     session.flush()
     task_service.event_publisher.publish(
@@ -207,7 +242,12 @@ def list_twins(session: DBSession, _: User = Depends(get_current_user)) -> list[
 
 @agents_router.post("", response_model=AgentRead, status_code=status.HTTP_201_CREATED)
 def create_agent(payload: AgentCreate, session: DBSession, _: User = Depends(get_current_user)) -> Agent:
-    agent = Agent(name=payload.name, description=payload.description, capabilities=payload.capabilities, meta=payload.metadata)
+    agent = Agent(
+        name=payload.name,
+        description=payload.description,
+        capabilities=payload.capabilities,
+        meta=payload.metadata,
+    )
     session.add(agent)
     session.commit()
     return agent
@@ -221,7 +261,15 @@ def list_agents(session: DBSession, _: User = Depends(get_current_user)) -> list
 
 @tasks_router.post("", response_model=TaskRead, status_code=status.HTTP_201_CREATED)
 def create_task(payload: TaskCreate, request: Request, session: DBSession, current_user: User = Depends(get_current_user), task_service: TaskService = Depends(get_task_service)) -> Task:
-    task = Task(agent_id=payload.agent_id, space_id=payload.space_id, submitted_by_id=current_user.id, kind=payload.kind, description=payload.description, payload=payload.payload, sensitive=payload.sensitive)
+    task = Task(
+        agent_id=payload.agent_id,
+        space_id=payload.space_id,
+        submitted_by_id=current_user.id,
+        kind=payload.kind,
+        description=payload.description,
+        payload=payload.payload,
+        sensitive=payload.sensitive,
+    )
     task_service.submit_task(session, task=task, actor_id=current_user.id, request_id=request.state.request_id)
     session.commit()
     return task
@@ -238,20 +286,33 @@ def process_task(task_id: str, session: DBSession, _: User = Depends(get_current
     task = session.execute(select(Task).where(Task.id == task_id)).scalar_one_or_none()
     if task is None:
         raise HTTPException(status_code=404, detail="Task not found")
-    task_run = task_service.process_task(session, task)
+    try:
+        process_result = task_service.process_task(session, task)
+    except TaskProcessingConflict as exc:
+        session.rollback()
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=exc.message) from exc
     session.commit()
-    return task_run
+    return process_result.task_run
 
 
 @tasks_router.get("/{task_id}/runs", response_model=list[TaskRunRead])
 def list_task_runs(task_id: str, session: DBSession, _: User = Depends(get_current_user)) -> list[TaskRun]:
-    result = session.execute(select(TaskRun).where(TaskRun.task_id == task_id).order_by(TaskRun.created_at.desc()))
+    result = session.execute(
+        select(TaskRun).where(TaskRun.task_id == task_id).order_by(TaskRun.created_at.desc())
+    )
     return list(result.scalars())
 
 
 @policies_router.post("", response_model=PolicyRead, status_code=status.HTTP_201_CREATED)
 def create_policy(payload: PolicyCreate, session: DBSession, _: User = Depends(require_admin)) -> Policy:
-    policy = Policy(name=payload.name, description=payload.description, effect=payload.effect.value, applies_to=payload.applies_to, rules=payload.rules, active=payload.active)
+    policy = Policy(
+        name=payload.name,
+        description=payload.description,
+        effect=payload.effect.value,
+        applies_to=payload.applies_to,
+        rules=payload.rules,
+        active=payload.active,
+    )
     session.add(policy)
     session.commit()
     return policy
@@ -271,7 +332,12 @@ def list_policy_decisions(session: DBSession, _: User = Depends(get_current_user
 
 @devices_router.post("", response_model=DeviceRead, status_code=status.HTTP_201_CREATED)
 def create_device(payload: DeviceCreate, session: DBSession, _: User = Depends(get_current_user)) -> Device:
-    device = Device(space_id=payload.space_id, name=payload.name, device_type=payload.device_type.value, meta=payload.metadata)
+    device = Device(
+        space_id=payload.space_id,
+        name=payload.name,
+        device_type=payload.device_type.value,
+        meta=payload.metadata,
+    )
     session.add(device)
     session.commit()
     return device
@@ -285,7 +351,13 @@ def list_devices(session: DBSession, _: User = Depends(get_current_user)) -> lis
 
 @devices_router.post("/bridges", response_model=RobotBridgeRead, status_code=status.HTTP_201_CREATED)
 def create_bridge(payload: RobotBridgeCreate, session: DBSession, _: User = Depends(get_current_user)) -> RobotBridge:
-    bridge = RobotBridge(device_id=payload.device_id, name=payload.name, mode=payload.mode.value, adapter=payload.adapter, meta=payload.metadata)
+    bridge = RobotBridge(
+        device_id=payload.device_id,
+        name=payload.name,
+        mode=payload.mode.value,
+        adapter=payload.adapter,
+        meta=payload.metadata,
+    )
     session.add(bridge)
     session.commit()
     return bridge
