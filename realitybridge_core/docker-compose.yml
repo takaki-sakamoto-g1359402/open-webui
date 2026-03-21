@@ -1,0 +1,64 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: realitybridge
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d realitybridge"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile
+    env_file:
+      - .env.example
+    environment:
+      RB_DATABASE_URL: postgresql+psycopg://postgres:postgres@postgres:5432/realitybridge
+      RB_REDIS_URL: redis://redis:6379/0
+    command: ["uvicorn", "apps.api.main:app", "--host", "0.0.0.0", "--port", "8090"]
+    ports:
+      - "8090:8090"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile
+    env_file:
+      - .env.example
+    environment:
+      RB_DATABASE_URL: postgresql+psycopg://postgres:postgres@postgres:5432/realitybridge
+      RB_REDIS_URL: redis://redis:6379/0
+      RB_EVENT_CONSUMER_NAME: worker-compose
+    command: ["python", "-m", "apps.worker.main"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
