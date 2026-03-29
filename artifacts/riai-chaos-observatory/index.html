@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>理愛式カオス観測室 | Riai Chaos Observatory</title>
+  <style>
+    :root {
+      --bg-1: #050816;
+      --bg-2: #0a1330;
+      --panel: rgba(15, 24, 45, 0.82);
+      --panel-2: rgba(18, 30, 54, 0.72);
+      --line: rgba(255, 255, 255, 0.12);
+      --soft-line: rgba(255, 255, 255, 0.06);
+      --text: #ecf3ff;
+      --muted: #9eb0d1;
+      --accent: #8cb7ff;
+      --accent-2: #76f2d2;
+      --accent-3: #c9a7ff;
+      --warning: #ffd36e;
+      --danger: #ff8da1;
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.32);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(133, 176, 255, 0.18), transparent 32%),
+        radial-gradient(circle at 85% 20%, rgba(118, 242, 210, 0.12), transparent 25%),
+        linear-gradient(160deg, var(--bg-2), var(--bg-1));
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        radial-gradient(circle at 20% 30%, rgba(255,255,255,0.08) 0 1px, transparent 1.2px),
+        radial-gradient(circle at 70% 20%, rgba(255,255,255,0.06) 0 1px, transparent 1.3px),
+        radial-gradient(circle at 60% 75%, rgba(255,255,255,0.05) 0 1px, transparent 1.1px),
+        radial-gradient(circle at 85% 60%, rgba(255,255,255,0.05) 0 1px, transparent 1.2px);
+      background-size: 240px 240px, 260px 260px, 200px 200px, 300px 300px;
+      opacity: 0.9;
+    }
+
+    #app {
+      width: 100vw;
+      height: 100vh;
+      display: grid;
+      grid-template-columns: 390px 1fr;
+    }
+
+    .sidebar {
+      position: relative;
+      overflow-y: auto;
+      padding: 18px;
+      background: linear-gradient(180deg, rgba(10,18,38,0.86), rgba(7,11,26,0.86));
+      backdrop-filter: blur(14px);
+      border-right: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      z-index: 2;
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(140,183,255,0.25);
+      background: rgba(140,183,255,0.08);
+      color: #d9e7ff;
+      font-size: 0.83rem;
+      margin-bottom: 14px;
+    }
+
+    .logo-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-2), var(--accent));
+      box-shadow: 0 0 14px rgba(118,242,210,0.5);
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 1.5rem;
+      line-height: 1.15;
+      letter-spacing: 0.02em;
+    }
+
+    .lead {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.02));
+      border: 1px solid var(--soft-line);
+      border-radius: 20px;
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+
+    .card h2 {
+      margin: 0 0 10px;
+      font-size: 0.98rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .chip {
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 0.72rem;
+      color: #dce8ff;
+      background: rgba(201, 167, 255, 0.12);
+      border: 1px solid rgba(201, 167, 255, 0.18);
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 10px 0;
+    }
+
+    .row label {
+      width: 96px;
+      flex-shrink: 0;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .row input[type="range"], .row select {
+      flex: 1;
+    }
+
+    select, button, input[type="range"] {
+      accent-color: var(--accent);
+    }
+
+    select, button {
+      border: 1px solid var(--line);
+      color: var(--text);
+      background: rgba(255,255,255,0.05);
+      border-radius: 14px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: transform 0.16s ease, background 0.16s ease, border-color 0.16s ease;
+    }
+
+    button:hover, select:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(140,183,255,0.32);
+      transform: translateY(-1px);
+    }
+
+    .value {
+      width: 60px;
+      text-align: right;
+      font-size: 0.88rem;
+      font-variant-numeric: tabular-nums;
+      color: var(--text);
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .primary {
+      background: linear-gradient(135deg, rgba(118,242,210,0.18), rgba(140,183,255,0.18));
+      border-color: rgba(118,242,210,0.24);
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 0.85rem;
+      line-height: 1.6;
+      margin-top: 8px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .stat {
+      padding: 11px;
+      border-radius: 16px;
+      border: 1px solid var(--soft-line);
+      background: rgba(255,255,255,0.025);
+    }
+
+    .stat .k {
+      font-size: 0.76rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .stat .v {
+      font-size: 1rem;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .viewport {
+      position: relative;
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+    }
+
+    canvas.dragging { cursor: grabbing; }
+
+    .hud {
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      bottom: 16px;
+      display: grid;
+      grid-template-columns: minmax(260px, 420px) minmax(220px, 280px);
+      gap: 12px;
+      pointer-events: none;
+    }
+
+    .glass {
+      pointer-events: auto;
+      border-radius: 18px;
+      padding: 12px 14px;
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(10,16,30,0.52);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+    }
+
+    .glass p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 0.9rem;
+    }
+
+    .glass strong { color: var(--text); }
+
+    .headline {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(10,16,30,0.55);
+      color: #d9e7ff;
+      font-size: 0.84rem;
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+    }
+
+    .meter {
+      height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.07);
+      margin-top: 10px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .meter-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--warning), var(--danger));
+      box-shadow: 0 0 18px rgba(118,242,210,0.28);
+      transition: width 0.2s ease;
+    }
+
+    .theme-swatches {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .swatch {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.15);
+      cursor: pointer;
+      box-shadow: inset 0 0 0 2px rgba(0,0,0,0.15);
+    }
+
+    .footer-note {
+      margin-top: 10px;
+      font-size: 0.78rem;
+      color: rgba(158,176,209,0.8);
+      line-height: 1.5;
+    }
+
+    @media (max-width: 1080px) {
+      #app {
+        grid-template-columns: 1fr;
+        grid-template-rows: 44vh 1fr;
+      }
+      .sidebar {
+        border-right: none;
+        border-bottom: 1px solid var(--line);
+      }
+      .hud {
+        grid-template-columns: 1fr;
+      }
+      .headline {
+        right: 14px;
+        top: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <aside class="sidebar">
+      <div class="logo"><span class="logo-dot"></span>理愛式観測プロトタイプ / Riai Original</div>
+      <h1>理愛式カオス観測室</h1>
+      <p class="lead">
+        ただの可視化ではなく、<strong>「世界線の分岐を観測して遊ぶUI」</strong>として再設計しました。<br>
+        ローレンツ・アトラクタを3Dで触りながら、規則・予測不能性・美しさを直感で掴めます。
+      </p>
+
+      <section class="card">
+        <h2>観測モード <span class="chip">Original Mix</span></h2>
+        <div class="row">
+          <label for="preset">プリセット</label>
+          <select id="preset">
+            <option value="classic">標準 Lorenz</option>
+            <option value="calm">静かな夜</option>
+            <option value="wild">暴れる蝶</option>
+            <option value="butterfly">運命分岐</option>
+          </select>
+        </div>
+        <div class="row">
+          <label for="theme">テーマ</label>
+          <select id="theme">
+            <option value="riai">Riai Aurora</option>
+            <option value="ember">Ember Signal</option>
+            <option value="monochrome">Monochrome Lab</option>
+          </select>
+        </div>
+        <div class="buttons">
+          <button id="playPause" class="primary">一時停止</button>
+          <button id="reset">世界線を初期化</button>
+          <button id="toggleCompare">比較軌道 ON</button>
+          <button id="toggleAutoRotate">自動旋回 ON</button>
+        </div>
+        <div class="hint">
+          理愛コメントは、軌道間距離や挙動に応じて変化します。<br>
+          つまり今回は、数式だけでなく少しだけ性格も混ざっています。
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>パラメータ</h2>
+        <div class="row">
+          <label for="sigma">σ (sigma)</label>
+          <input id="sigma" type="range" min="1" max="30" step="0.1" value="10" />
+          <div class="value" id="sigmaVal">10.0</div>
+        </div>
+        <div class="row">
+          <label for="rho">ρ (rho)</label>
+          <input id="rho" type="range" min="1" max="60" step="0.1" value="28" />
+          <div class="value" id="rhoVal">28.0</div>
+        </div>
+        <div class="row">
+          <label for="beta">β (beta)</label>
+          <input id="beta" type="range" min="0.5" max="8" step="0.01" value="2.67" />
+          <div class="value" id="betaVal">2.67</div>
+        </div>
+        <div class="row">
+          <label for="speed">速度</label>
+          <input id="speed" type="range" min="1" max="30" step="1" value="8" />
+          <div class="value" id="speedVal">8</div>
+        </div>
+        <div class="row">
+          <label for="trail">軌跡数</label>
+          <input id="trail" type="range" min="500" max="14000" step="100" value="5200" />
+          <div class="value" id="trailVal">5200</div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>理愛のひとこと</h2>
+        <div class="hint" id="riaiComment">
+          観測開始。今のところ世界線は穏やかです。ですが、穏やかさは長く続くとは限りません。
+        </div>
+        <div class="meter" aria-hidden="true">
+          <div class="meter-fill" id="divergenceFill"></div>
+        </div>
+        <div class="footer-note" id="divergenceText">
+          分岐レベル: 0% / まだ蝶は準備運動中です。
+        </div>
+        <div class="theme-swatches">
+          <button class="swatch" data-theme="riai" style="background: linear-gradient(135deg, #8cb7ff, #76f2d2, #c9a7ff);"></button>
+          <button class="swatch" data-theme="ember" style="background: linear-gradient(135deg, #ffb36b, #ff7da0, #ffd86b);"></button>
+          <button class="swatch" data-theme="monochrome" style="background: linear-gradient(135deg, #dfe6f2, #92a0bb, #5e6880);"></button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>観測値</h2>
+        <div class="stats">
+          <div class="stat"><div class="k">ステップ</div><div class="v" id="stepCount">0</div></div>
+          <div class="stat"><div class="k">軌道間距離</div><div class="v" id="distance">0.0000</div></div>
+          <div class="stat"><div class="k">回転X</div><div class="v" id="rotXVal">0.80</div></div>
+          <div class="stat"><div class="k">回転Y</div><div class="v" id="rotYVal">-0.55</div></div>
+          <div class="stat"><div class="k">ズーム</div><div class="v" id="zoomVal">9.00</div></div>
+          <div class="stat"><div class="k">状態</div><div class="v" id="modeLabel">観測中</div></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>見方の要点</h2>
+        <div class="hint">
+          <strong>1.</strong> カオスは「完全な無秩序」ではなく、規則に従う複雑さです。<br>
+          <strong>2.</strong> 比較軌道をONにすると、初期値のわずかな差が未来を大きく変える様子を体感できます。<br>
+          <strong>3.</strong> つまりこれは、<strong>規則があるのに未来が従順とは限らない</strong>世界の観測です。<br><br>
+          数式:<br>
+          dx/dt = σ(y − x)<br>
+          dy/dt = x(ρ − z) − y<br>
+          dz/dt = xy − βz
+        </div>
+      </section>
+    </aside>
+
+    <main class="viewport">
+      <canvas id="canvas"></canvas>
+      <div class="headline" id="headline">Riai Aurora / 観測中</div>
+      <div class="hud">
+        <div class="glass">
+          <p><strong>操作:</strong> ドラッグで回転 / ホイールでズーム / 比較軌道で未来分岐を観測 / 自動旋回で展示モード化。</p>
+        </div>
+        <div class="glass">
+          <p id="statusText"><strong>観測メモ:</strong> 軌道は規則に従っているのに、見ているこちらの心だけが少しカオスです。</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const controls = {
+      sigma: document.getElementById('sigma'),
+      rho: document.getElementById('rho'),
+      beta: document.getElementById('beta'),
+      speed: document.getElementById('speed'),
+      trail: document.getElementById('trail'),
+      preset: document.getElementById('preset'),
+      theme: document.getElementById('theme'),
+      playPause: document.getElementById('playPause'),
+      reset: document.getElementById('reset'),
+      toggleCompare: document.getElementById('toggleCompare'),
+      toggleAutoRotate: document.getElementById('toggleAutoRotate')
+    };
+
+    const labels = {
+      sigma: document.getElementById('sigmaVal'),
+      rho: document.getElementById('rhoVal'),
+      beta: document.getElementById('betaVal'),
+      speed: document.getElementById('speedVal'),
+      trail: document.getElementById('trailVal'),
+      stepCount: document.getElementById('stepCount'),
+      distance: document.getElementById('distance'),
+      rotXVal: document.getElementById('rotXVal'),
+      rotYVal: document.getElementById('rotYVal'),
+      zoomVal: document.getElementById('zoomVal'),
+      modeLabel: document.getElementById('modeLabel')
+    };
+
+    const ui = {
+      comment: document.getElementById('riaiComment'),
+      divergenceFill: document.getElementById('divergenceFill'),
+      divergenceText: document.getElementById('divergenceText'),
+      statusText: document.getElementById('statusText'),
+      headline: document.getElementById('headline')
+    };
+
+    const presets = {
+      classic: { sigma: 10, rho: 28, beta: 2.67 },
+      calm: { sigma: 10, rho: 18, beta: 2.4 },
+      wild: { sigma: 14, rho: 42, beta: 3.1 },
+      butterfly: { sigma: 10, rho: 30, beta: 2.67 }
+    };
+
+    const themes = {
+      riai: {
+        bg1: '#050816', bg2: '#0a1330', accent: '#8cb7ff', accent2: '#76f2d2', accent3: '#c9a7ff', warning: '#ffd36e', danger: '#ff8da1',
+        trail1: [140, 183, 255], trail2: [118, 242, 210], label: 'Riai Aurora'
+      },
+      ember: {
+        bg1: '#13070a', bg2: '#30110d', accent: '#ffb36b', accent2: '#ff7da0', accent3: '#ffd86b', warning: '#ffdb72', danger: '#ff6b79',
+        trail1: [255, 179, 107], trail2: [255, 125, 160], label: 'Ember Signal'
+      },
+      monochrome: {
+        bg1: '#0b0d12', bg2: '#1b2230', accent: '#dfe6f2', accent2: '#aab5ca', accent3: '#7b879c', warning: '#d0d6e4', danger: '#a7b0c2',
+        trail1: [223, 230, 242], trail2: [170, 181, 202], label: 'Monochrome Lab'
+      }
+    };
+
+    const state = {
+      sigma: 10,
+      rho: 28,
+      beta: 2.67,
+      dt: 0.005,
+      speed: 8,
+      trailMax: 5200,
+      running: true,
+      compare: true,
+      autoRotate: true,
+      step: 0,
+      rotX: 0.82,
+      rotY: -0.58,
+      zoom: 9,
+      drag: false,
+      lastX: 0,
+      lastY: 0,
+      theme: 'riai'
+    };
+
+    let p1, p2, trail1, trail2;
+
+    function setCanvasSize() {
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.floor(rect.width * dpr);
+      canvas.height = Math.floor(rect.height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function resetSystem() {
+      p1 = { x: 0.1, y: 0, z: 0 };
+      p2 = { x: 0.1001, y: 0, z: 0 };
+      trail1 = [];
+      trail2 = [];
+      state.step = 0;
+    }
+
+    function lorenzStep(p) {
+      const dx = state.sigma * (p.y - p.x);
+      const dy = p.x * (state.rho - p.z) - p.y;
+      const dz = p.x * p.y - state.beta * p.z;
+      p.x += dx * state.dt;
+      p.y += dy * state.dt;
+      p.z += dz * state.dt;
+    }
+
+    function pushTrail(trail, p) {
+      trail.push({ x: p.x, y: p.y, z: p.z });
+      if (trail.length > state.trailMax) trail.shift();
+    }
+
+    function rotate(point) {
+      let x = point.x;
+      let y = point.y;
+      let z = point.z;
+
+      const cosY = Math.cos(state.rotY);
+      const sinY = Math.sin(state.rotY);
+      const x1 = x * cosY + z * sinY;
+      const z1 = -x * sinY + z * cosY;
+
+      const cosX = Math.cos(state.rotX);
+      const sinX = Math.sin(state.rotX);
+      const y2 = y * cosX - z1 * sinX;
+      const z2 = y * sinX + z1 * cosX;
+
+      return { x: x1, y: y2, z: z2 };
+    }
+
+    function project(point, w, h) {
+      const p = rotate(point);
+      const camera = 120;
+      const depth = camera / (camera + p.z + 60);
+      const scale = state.zoom * depth;
+      return { x: w / 2 + p.x * scale, y: h / 2 - p.y * scale, depth };
+    }
+
+    function drawGrid(w, h) {
+      const spacing = 56;
+      ctx.strokeStyle = 'rgba(255,255,255,0.035)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x <= w; x += spacing) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, h);
+        ctx.stroke();
+      }
+      for (let y = 0; y <= h; y += spacing) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+        ctx.stroke();
+      }
+    }
+
+    function drawAxes(w, h) {
+      const t = themes[state.theme];
+      const axes = [
+        { from: { x: -30, y: 0, z: 0 }, to: { x: 30, y: 0, z: 0 }, color: `rgba(${t.trail1[0]}, ${t.trail1[1]}, ${t.trail1[2]}, 0.45)` },
+        { from: { x: 0, y: -30, z: 0 }, to: { x: 0, y: 30, z: 0 }, color: `rgba(${t.trail2[0]}, ${t.trail2[1]}, ${t.trail2[2]}, 0.45)` },
+        { from: { x: 0, y: 0, z: -30 }, to: { x: 0, y: 0, z: 30 }, color: 'rgba(255,210,140,0.35)' }
+      ];
+      for (const a of axes) {
+        const a1 = project(a.from, w, h);
+        const a2 = project(a.to, w, h);
+        ctx.beginPath();
+        ctx.moveTo(a1.x, a1.y);
+        ctx.lineTo(a2.x, a2.y);
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = a.color;
+        ctx.stroke();
+      }
+    }
+
+    function drawTrail(trail, colorBase, width) {
+      if (trail.length < 2) return;
+      for (let i = 1; i < trail.length; i++) {
+        const a = project(trail[i - 1], canvas.clientWidth, canvas.clientHeight);
+        const b = project(trail[i], canvas.clientWidth, canvas.clientHeight);
+        const alpha = i / trail.length;
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.lineWidth = width;
+        ctx.strokeStyle = `rgba(${colorBase[0]}, ${colorBase[1]}, ${colorBase[2]}, ${0.05 + alpha * 0.95})`;
+        ctx.stroke();
+      }
+    }
+
+    function drawPoint(p, rgba) {
+      const pr = project(p, canvas.clientWidth, canvas.clientHeight);
+      const radius = Math.max(2.2, 4.3 * pr.depth);
+      ctx.beginPath();
+      ctx.arc(pr.x, pr.y, radius * 2.2, 0, Math.PI * 2);
+      ctx.fillStyle = rgba.replace(')', ', 0.10)').replace('rgb', 'rgba');
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(pr.x, pr.y, radius, 0, Math.PI * 2);
+      ctx.fillStyle = rgba;
+      ctx.fill();
+    }
+
+    function updateTheme(themeName) {
+      state.theme = themeName;
+      controls.theme.value = themeName;
+      const t = themes[themeName];
+      const root = document.documentElement.style;
+      root.setProperty('--bg-1', t.bg1);
+      root.setProperty('--bg-2', t.bg2);
+      root.setProperty('--accent', t.accent);
+      root.setProperty('--accent-2', t.accent2);
+      root.setProperty('--accent-3', t.accent3);
+      root.setProperty('--warning', t.warning);
+      root.setProperty('--danger', t.danger);
+      ui.headline.textContent = `${t.label} / ${state.running ? '観測中' : '一時停止'}`;
+    }
+
+    function getDistance() {
+      if (!state.compare) return 0;
+      const dx = p2.x - p1.x;
+      const dy = p2.y - p1.y;
+      const dz = p2.z - p1.z;
+      return Math.sqrt(dx * dx + dy * dy + dz * dz);
+    }
+
+    function updateCommentary(distance) {
+      const norm = Math.min(100, Math.round(Math.log10(distance + 1) * 45));
+      ui.divergenceFill.style.width = `${Math.max(4, norm)}%`;
+
+      let comment = '';
+      let memo = '';
+      let meter = '';
+      if (!state.compare) {
+        comment = '比較軌道がOFFです。今はひとつの世界線を静かに追跡しています。平和ですが、少しだけ寂しいです。';
+        memo = '観測メモ: 比較対象なし。これはこれで、単独行動に強い軌道です。';
+        meter = '分岐レベル: -- / 比較軌道をONにすると未来のズレが見えます。';
+      } else if (distance < 0.3) {
+        comment = 'まだ誤差は小さいです。蝶は羽ばたいていますが、宇宙は今のところ冷静です。';
+        memo = '観測メモ: 世界線はまだ近接。見た目以上に静かな序盤戦です。';
+        meter = `分岐レベル: ${norm}% / まだ準備運動の範囲です。`;
+      } else if (distance < 2) {
+        comment = '分岐が見え始めました。わずかな差が、ようやく未来へ仕事をし始めています。';
+        memo = '観測メモ: 規則はある。だが従順とは限らない。カオスらしくなってきました。';
+        meter = `分岐レベル: ${norm}% / ここから世界線が少しずつ性格を出してきます。`;
+      } else if (distance < 8) {
+        comment = 'いい感じにズレています。理論書の一文が、急に体験へ変わるあたりです。';
+        memo = '観測メモ: 初期値の小差が未来を引っ張り始めました。蝶、仕事が早いです。';
+        meter = `分岐レベル: ${norm}% / 予測しづらさがちゃんと可視化されています。`;
+      } else {
+        comment = 'かなり未来が分岐しています。数式は冷静でも、結果はだいぶドラマチックです。';
+        memo = '観測メモ: ここまで来ると、規則があるのに未来が素直でないことがよく分かります。';
+        meter = `分岐レベル: ${norm}% / 蝶というより、もはや運命が本気です。`;
+      }
+
+      ui.comment.textContent = comment;
+      ui.statusText.innerHTML = `<strong>観測メモ:</strong> ${memo}`;
+      ui.divergenceText.textContent = meter;
+    }
+
+    function updateLabels() {
+      const distance = getDistance();
+      labels.sigma.textContent = state.sigma.toFixed(1);
+      labels.rho.textContent = state.rho.toFixed(1);
+      labels.beta.textContent = state.beta.toFixed(2);
+      labels.speed.textContent = String(state.speed);
+      labels.trail.textContent = String(state.trailMax);
+      labels.stepCount.textContent = state.step.toLocaleString('ja-JP');
+      labels.distance.textContent = state.compare ? distance.toFixed(4) : '---';
+      labels.rotXVal.textContent = state.rotX.toFixed(2);
+      labels.rotYVal.textContent = state.rotY.toFixed(2);
+      labels.zoomVal.textContent = state.zoom.toFixed(2);
+      labels.modeLabel.textContent = state.running ? '観測中' : '停止中';
+      ui.headline.textContent = `${themes[state.theme].label} / ${state.running ? '観測中' : '一時停止'}`;
+      updateCommentary(distance);
+    }
+
+    function tick() {
+      if (!state.running) return;
+      if (state.autoRotate && !state.drag) {
+        state.rotY += 0.0025;
+      }
+      for (let i = 0; i < state.speed; i++) {
+        lorenzStep(p1);
+        pushTrail(trail1, p1);
+        if (state.compare) {
+          lorenzStep(p2);
+          pushTrail(trail2, p2);
+        }
+        state.step++;
+      }
+    }
+
+    function render() {
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      const t = themes[state.theme];
+      ctx.clearRect(0, 0, w, h);
+      drawGrid(w, h);
+      drawAxes(w, h);
+      drawTrail(trail1, t.trail1, 1.85);
+      if (state.compare) drawTrail(trail2, t.trail2, 1.15);
+      drawPoint(p1, `rgb(${t.trail1[0]}, ${t.trail1[1]}, ${t.trail1[2]})`);
+      if (state.compare) drawPoint(p2, `rgb(${t.trail2[0]}, ${t.trail2[1]}, ${t.trail2[2]})`);
+      updateLabels();
+    }
+
+    function loop() {
+      tick();
+      render();
+      requestAnimationFrame(loop);
+    }
+
+    function bindRange(id, key, format) {
+      controls[id].addEventListener('input', (e) => {
+        state[key] = Number(e.target.value);
+        labels[id].textContent = format(state[key]);
+      });
+    }
+
+    bindRange('sigma', 'sigma', v => v.toFixed(1));
+    bindRange('rho', 'rho', v => v.toFixed(1));
+    bindRange('beta', 'beta', v => v.toFixed(2));
+    bindRange('speed', 'speed', v => String(v));
+    bindRange('trail', 'trailMax', v => String(v));
+
+    controls.playPause.addEventListener('click', () => {
+      state.running = !state.running;
+      controls.playPause.textContent = state.running ? '一時停止' : '再生';
+    });
+
+    controls.reset.addEventListener('click', () => resetSystem());
+
+    controls.toggleCompare.addEventListener('click', () => {
+      state.compare = !state.compare;
+      controls.toggleCompare.textContent = `比較軌道 ${state.compare ? 'ON' : 'OFF'}`;
+      if (!state.compare) {
+        trail2 = [];
+      } else {
+        p2 = { x: p1.x + 0.0001, y: p1.y, z: p1.z };
+      }
+    });
+
+    controls.toggleAutoRotate.addEventListener('click', () => {
+      state.autoRotate = !state.autoRotate;
+      controls.toggleAutoRotate.textContent = `自動旋回 ${state.autoRotate ? 'ON' : 'OFF'}`;
+    });
+
+    controls.preset.addEventListener('change', (e) => {
+      const preset = presets[e.target.value];
+      state.sigma = preset.sigma;
+      state.rho = preset.rho;
+      state.beta = preset.beta;
+      controls.sigma.value = preset.sigma;
+      controls.rho.value = preset.rho;
+      controls.beta.value = preset.beta;
+      resetSystem();
+    });
+
+    controls.theme.addEventListener('change', (e) => updateTheme(e.target.value));
+
+    document.querySelectorAll('.swatch').forEach((button) => {
+      button.addEventListener('click', () => updateTheme(button.dataset.theme));
+    });
+
+    canvas.addEventListener('mousedown', (e) => {
+      state.drag = true;
+      state.lastX = e.clientX;
+      state.lastY = e.clientY;
+      canvas.classList.add('dragging');
+    });
+
+    window.addEventListener('mouseup', () => {
+      state.drag = false;
+      canvas.classList.remove('dragging');
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!state.drag) return;
+      const dx = e.clientX - state.lastX;
+      const dy = e.clientY - state.lastY;
+      state.rotY += dx * 0.01;
+      state.rotX += dy * 0.01;
+      state.lastX = e.clientX;
+      state.lastY = e.clientY;
+    });
+
+    canvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      state.zoom *= e.deltaY > 0 ? 0.92 : 1.08;
+      state.zoom = Math.max(3.2, Math.min(25, state.zoom));
+    }, { passive: false });
+
+    window.addEventListener('resize', setCanvasSize);
+
+    setCanvasSize();
+    updateTheme('riai');
+    resetSystem();
+    updateLabels();
+    loop();
+  </script>
+</body>
+</html>
