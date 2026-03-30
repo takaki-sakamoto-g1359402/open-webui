@@ -1,0 +1,1 @@
+Hi {{ sender_name }}, thanks for your note about {{ summary }}. {{ next_step }} Please let us know if any other details are needed. – Riai Support
