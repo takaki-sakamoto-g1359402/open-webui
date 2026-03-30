@@ -1,0 +1,19 @@
+[project]
+name = "hmos"
+version = "0.1.0"
+description = "HybridMind OS MVP"
+requires-python = ">=3.11"
+readme = "README.md"
+dependencies = [
+    "fastapi==0.115.7",
+    "pydantic==2.10.6",
+    "uvicorn[standard]==0.34.0",
+    "requests==2.32.3",
+    "redis==5.2.1",
+]
+
+[project.scripts]
+hmos = "hmos.cli:main"
+
+[tool.pytest.ini_options]
+addopts = "-q"
