@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Skyshard Surge</title>
+    <meta
+      name="description"
+      content="Skyshard Surge is an original browser-based 3D voxel action prototype with destructible terrain, aerial movement, and energy combat."
+    />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%231d6cff' d='M16 2l8 10-8 18L8 12z'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="game-canvas" aria-label="Skyshard Surge game viewport"></canvas>
+      <div id="hud" class="hud">
+        <div class="hud__top">
+          <div class="hud__identity">
+            <div class="hud__eyebrow">Original Voxel Action Prototype</div>
+            <h1>Skyshard Surge</h1>
+            <p id="status-text">Initializing prototype systems...</p>
+          </div>
+          <div class="hud__meters">
+            <div class="meter">
+              <span>HP</span>
+              <div class="meter__track"><div id="hp-fill" class="meter__fill meter__fill--hp"></div></div>
+              <strong id="hp-text">100 / 100</strong>
+            </div>
+            <div class="meter">
+              <span>Stamina</span>
+              <div class="meter__track"><div id="stamina-fill" class="meter__fill meter__fill--stamina"></div></div>
+              <strong id="stamina-text">100 / 100</strong>
+            </div>
+            <div class="meter">
+              <span>Energy</span>
+              <div class="meter__track"><div id="energy-fill" class="meter__fill meter__fill--energy"></div></div>
+              <strong id="energy-text">100 / 100</strong>
+            </div>
+          </div>
+        </div>
+        <div class="hud__bottom">
+          <div class="panel">
+            <h2>Combat</h2>
+            <p id="combat-text">Projectile system offline.</p>
+            <p id="enemy-text">Dummy target offline.</p>
+          </div>
+          <div class="panel">
+            <h2>World</h2>
+            <p id="chunk-text">Chunks: 0 loaded</p>
+            <p id="target-text">Target: none</p>
+          </div>
+          <div class="panel">
+            <h2>Controls</h2>
+            <p>`WASD` move, `Space` jump, `Shift` sprint, `F` flight</p>
+            <p>`Q` dash, `E` place, `R` remove, `LMB` or `G` fire</p>
+          </div>
+        </div>
+        <div class="crosshair" aria-hidden="true"></div>
+      </div>
+    </div>
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@dimforge/rapier3d-compat@0.14.0/rapier.js"></script>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
