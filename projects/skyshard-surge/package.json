@@ -1,0 +1,21 @@
+{
+  "name": "skyshard-surge",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Original browser-based 3D voxel action prototype built with TypeScript, Vite, Babylon.js, and Rapier.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@babylonjs/core": "^7.42.0",
+    "@dimforge/rapier3d-compat": "^0.14.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vite": "^6.0.1"
+  }
+}
