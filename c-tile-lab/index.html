@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>C-Tile Lab</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="controls">
+  <header>Orient</header>
+  <button data-set="0">0°</button>
+  <button data-set="1">90°</button>
+  <button data-set="2">180°</button>
+  <button data-set="3">270°</button>
+  <header>Row</header>
+  <button id="row-left">Rotate Row -90</button>
+  <button id="row-right">Rotate Row +90</button>
+  <header>Column</header>
+  <button id="col-up">Rotate Col -90</button>
+  <button id="col-down">Rotate Col +90</button>
+  <header>Generators</header>
+  <button id="gen-random">Random</button>
+  <button id="gen-h">Align Horizontal</button>
+  <button id="gen-v">Align Vertical</button>
+  <button id="gen-wave">Wave Band</button>
+  <header>Actions</header>
+  <button id="scan-toggle">Start Scan</button>
+  <label>Speed <input type="range" id="scan-speed" min="1" max="10" value="3"></label>
+  <button id="export-png">Export PNG</button>
+  <button id="export-json">Export JSON</button>
+  <input type="file" id="import-json" accept="application/json">
+  <header>Path</header>
+  <button id="find-path">Find Longest Path</button>
+  <button id="show-components">Toggle Components</button>
+  <button id="clear-selection">All</button>
+</div>
+<canvas id="canvas"></canvas>
+<script type="module" src="./src/main.ts"></script>
+</body>
+</html>
