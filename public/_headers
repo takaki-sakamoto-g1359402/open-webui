@@ -1,0 +1,16 @@
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/app.js
+  Cache-Control: public, max-age=3600
+  X-Content-Type-Options: nosniff
+
+/styles.css
+  Cache-Control: public, max-age=3600
+  X-Content-Type-Options: nosniff
+
+/game/*
+  Cache-Control: public, max-age=3600
+  X-Content-Type-Options: nosniff

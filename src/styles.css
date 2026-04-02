@@ -1,0 +1,207 @@
+:root {
+  color-scheme: dark;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  line-height: 1.4;
+  font-weight: 500;
+  background:
+    radial-gradient(circle at top, rgba(122, 211, 255, 0.3), transparent 40%),
+    linear-gradient(180deg, #091321 0%, #071018 60%, #05070d 100%);
+  color: #f4fbff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background:
+    radial-gradient(circle at top, rgba(122, 211, 255, 0.24), transparent 30%),
+    linear-gradient(180deg, #091321 0%, #071018 60%, #05070d 100%);
+}
+
+#game-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+}
+
+.hud {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px;
+}
+
+.hud__top,
+.hud__bottom {
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.hud__identity,
+.panel,
+.hud__meters {
+  border: 1px solid rgba(167, 217, 255, 0.2);
+  background: rgba(4, 10, 20, 0.58);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+  border-radius: 18px;
+}
+
+.hud__identity,
+.panel {
+  padding: 14px 16px;
+}
+
+.hud__identity {
+  max-width: 440px;
+}
+
+.hud__identity h1,
+.panel h2 {
+  margin: 0 0 6px;
+}
+
+.hud__identity p,
+.panel p {
+  margin: 0;
+  color: rgba(228, 242, 255, 0.88);
+}
+
+.hud__eyebrow {
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #7bd3ff;
+  margin-bottom: 8px;
+}
+
+.hud__meters {
+  display: grid;
+  gap: 12px;
+  min-width: 300px;
+  padding: 14px 16px;
+}
+
+.meter {
+  display: grid;
+  grid-template-columns: 70px 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.meter__track {
+  position: relative;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.meter__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 100%;
+  border-radius: inherit;
+  transition: width 120ms linear;
+}
+
+.meter__fill--hp {
+  background: linear-gradient(90deg, #ff5d7e, #ff8d67);
+}
+
+.meter__fill--stamina {
+  background: linear-gradient(90deg, #6effc4, #9ef872);
+}
+
+.meter__fill--energy {
+  background: linear-gradient(90deg, #4ea5ff, #7cddff);
+}
+
+.hud__bottom {
+  align-items: stretch;
+}
+
+.panel {
+  width: min(31vw, 320px);
+}
+
+.panel h2 {
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8de8ff;
+  margin-bottom: 10px;
+}
+
+.panel p + p {
+  margin-top: 8px;
+}
+
+.crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 18px;
+  height: 18px;
+  transform: translate(-50%, -50%);
+}
+
+.crosshair::before,
+.crosshair::after {
+  content: "";
+  position: absolute;
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 12px rgba(124, 221, 255, 0.75);
+}
+
+.crosshair::before {
+  top: 8px;
+  left: 0;
+  right: 0;
+  height: 2px;
+}
+
+.crosshair::after {
+  left: 8px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+}
+
+@media (max-width: 900px) {
+  .hud {
+    padding: 12px;
+  }
+
+  .hud__top,
+  .hud__bottom {
+    flex-direction: column;
+  }
+
+  .hud__meters,
+  .panel,
+  .hud__identity {
+    width: 100%;
+    max-width: none;
+  }
+
+  .panel {
+    min-width: 0;
+  }
+}
