@@ -36,13 +36,22 @@ class SwarmRobot(threading.Thread):
         self.bus = bus
         self.agent = InnovatorAgent()
         self.params = np.random.rand(4).tolist()
+        self._policy_synced = False
         self.reward = 0.0
         self.last_hb = time.time()
         bus.subscribe("policy", self.update_policy)
 
     def update_policy(self, params: Iterable[float]) -> None:
-        vec = np.array(list(params))
-        self.params = ((np.array(self.params) + vec) / 2).tolist()
+        vec = np.array(list(params), dtype=float)
+        if not self._policy_synced:
+            # Adopt the first shared policy verbatim so all robots start from
+            # the same baseline before blending subsequent updates.
+            self.params = vec.tolist()
+            self._policy_synced = True
+            return
+
+        current = np.array(self.params, dtype=float)
+        self.params = ((current + vec) / 2).tolist()
 
     def run_episode(self) -> None:
         color, target = "red", "left"
