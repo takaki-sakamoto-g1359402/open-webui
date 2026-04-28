@@ -6,9 +6,13 @@ import { InputManager } from "../core/input.js";
 import { PhysicsWorld } from "./physics.js";
 import { VoxelWorld } from "./world/voxel-world.js";
 import { PlayerController } from "./player/player-controller.js";
-import { ProjectileSystem } from "./combat/projectile-system.js";
-import { EnemyManager } from "./entities/enemy-manager.js";
 import { Hud } from "./ui/hud.js";
+import { BLOCK_IDS } from "./world/block-types.js";
+import { BUILD_MODE_OPTIONS, getBuildingDefinitionForBlock } from "./buildings/building-types.js";
+import { BuildingManager } from "./buildings/building-manager.js";
+import { SettlementSimulation } from "./simulation/settlement-simulation.js";
+import { AGENT_PICK_METADATA_KEY, AgentManager } from "./agents/agent-manager.js";
+import { SaveSystem } from "./save/save-system.js";
 
 function round(value: number): number {
   return Number(value.toFixed(2));
@@ -35,6 +39,8 @@ export class SkyshardGame {
     this.hud = new Hud();
     this.elapsedSeconds = 0;
     this.currentTarget = null;
+    this.selectedBuildSlot = 1;
+    this.selectedBlockId = BLOCK_IDS.HOUSE;
 
     window.addEventListener("resize", () => {
       this.engine.resize();
@@ -49,18 +55,16 @@ export class SkyshardGame {
     this.physicsWorld = new PhysicsWorld();
     this.world = new VoxelWorld(this.scene, this.physicsWorld);
     this.world.updateStreaming(new BABYLON.Vector3(0, 0, 0), 12);
+
+    this.buildings = new BuildingManager();
+    this.settlement = new SettlementSimulation();
+    this.placeStarterSettlement();
     this.world.rebuildAllDirtyChunks();
 
     this.player = new PlayerController(this.scene, this.input, this.world);
     this.player.spawn(this.world.getSpawnPosition());
 
-    this.enemyManager = new EnemyManager(this.scene, this.world, this.player);
-    this.projectiles = new ProjectileSystem(
-      this.scene,
-      this.world,
-      this.player,
-      this.enemyManager.getDamageables(),
-    );
+    this.agentManager = new AgentManager(this.scene, this.world, this.buildings);
 
     this.selectionMesh = BABYLON.MeshBuilder.CreateBox(
       "selection-box",
@@ -80,6 +84,29 @@ export class SkyshardGame {
     this.selectionMesh.material = selectionMaterial;
 
     this.updateHud();
+  }
+
+  placeStarterSettlement(): void {
+    const starterBlocks = [
+      { x: 9, z: 10, blockId: BLOCK_IDS.HOUSE },
+      { x: 12, z: 10, blockId: BLOCK_IDS.STORAGE },
+      { x: 11, z: 13, blockId: BLOCK_IDS.WORKSHOP },
+      { x: 14, z: 12, blockId: BLOCK_IDS.CIVIC },
+      { x: 10, z: 11, blockId: BLOCK_IDS.ROAD },
+      { x: 11, z: 11, blockId: BLOCK_IDS.ROAD },
+      { x: 12, z: 11, blockId: BLOCK_IDS.ROAD },
+    ];
+
+    for (const block of starterBlocks) {
+      const y = this.world.getSurfaceHeightAt(block.x, block.z) + 1;
+      const placed = this.world.setBlock(block.x, y, block.z, block.blockId);
+
+      if (placed) {
+        this.buildings.recordBlockPlaced(block.x, y, block.z, block.blockId, "starter");
+      }
+    }
+
+    this.settlement.addLog("Starter settlement seeded with house, storage, workshop, roads, and civic beacon.", "success");
   }
 
   setupEnvironment(): void {
@@ -162,7 +189,14 @@ export class SkyshardGame {
       this.selectionMesh.setEnabled(false);
     }
 
+    this.handleSandboxInput();
+
     if (this.currentTarget && (this.input.wasPressed("KeyR") || this.input.wasPressed("Mouse2"))) {
+      const removedBlockId = this.world.getBlock(
+        this.currentTarget.voxel.x,
+        this.currentTarget.voxel.y,
+        this.currentTarget.voxel.z,
+      );
       const removed = this.world.setBlock(
         this.currentTarget.voxel.x,
         this.currentTarget.voxel.y,
@@ -171,6 +205,18 @@ export class SkyshardGame {
       );
 
       if (removed) {
+        const removedBuilding = this.buildings.recordBlockRemoved(
+          this.currentTarget.voxel.x,
+          this.currentTarget.voxel.y,
+          this.currentTarget.voxel.z,
+        );
+
+        if (removedBuilding) {
+          this.settlement.addLog(`${removedBuilding.label} removed. Settlement effects recalculated.`, "warning");
+        } else if (removedBlockId !== BLOCK_IDS.AIR) {
+          this.settlement.addLog("Terrain block removed.", "info");
+        }
+
         this.world.rebuildAllDirtyChunks();
       }
     }
@@ -184,27 +230,129 @@ export class SkyshardGame {
           placePosition.x,
           placePosition.y,
           placePosition.z,
-          this.world.placeableBlockId,
+          this.selectedBlockId,
         );
 
         if (placed) {
+          const building = this.buildings.recordBlockPlaced(
+            placePosition.x,
+            placePosition.y,
+            placePosition.z,
+            this.selectedBlockId,
+          );
+          const definition = getBuildingDefinitionForBlock(this.selectedBlockId);
+
+          if (building && definition) {
+            this.settlement.addLog(`${definition.label} built. ${definition.description}`, "success");
+          }
+
           this.world.rebuildAllDirtyChunks();
         }
       }
     }
 
-    const wantsFire =
-      (this.input.isPointerLocked() && this.input.isDown("Mouse0")) || this.input.isDown("KeyG");
-
-    if (wantsFire) {
-      this.projectiles.tryFire();
-    }
-
-    this.projectiles.update(deltaSeconds);
-    this.enemyManager.update(deltaSeconds, this.elapsedSeconds);
+    this.agentManager.update(deltaSeconds, this.settlement, this.buildings, this.world);
+    this.settlement.update(deltaSeconds, this.buildings, this.agentManager.getAgents());
     this.physicsWorld.step();
     this.updateHud();
     this.input.endFrame();
+  }
+
+  handleSandboxInput(): void {
+    for (const option of BUILD_MODE_OPTIONS) {
+      if (this.input.wasPressed(`Digit${option.slot}`)) {
+        this.selectedBuildSlot = option.slot;
+        this.selectedBlockId = option.blockId;
+        const definition = getBuildingDefinitionForBlock(option.blockId);
+        this.settlement.addLog(`Build mode selected: ${definition?.label ?? "Unknown"}.`, "info");
+      }
+    }
+
+    if (this.input.wasPressed("Mouse0")) {
+      const agent = this.trySelectCharacterFromPointer();
+
+      if (agent) {
+        this.settlement.addLog(`Inspecting ${agent.name} from direct selection.`, "info");
+      }
+    }
+
+    if (this.input.wasPressed("Tab")) {
+      const agent = this.agentManager.selectNextAgent();
+      this.settlement.addLog(`Inspecting ${agent.name}.`, "info");
+    }
+
+    if (this.input.wasPressed("KeyT")) {
+      const agent = this.agentManager.cycleSelectedDirective();
+      this.settlement.addLog(`${agent.name} directive: ${this.agentManager.getHudState().selected.directive}.`, "info");
+    }
+
+    if (this.input.wasPressed("KeyO")) {
+      const saved = SaveSystem.save({
+        buildings: this.buildings.getBuildings(),
+        settlement: this.settlement.serialize(),
+        agents: this.agentManager.serialize(),
+      });
+
+      this.settlement.addLog(
+        saved ? "Saved settlement state to local storage." : "Save failed: local storage unavailable.",
+        saved ? "success" : "warning",
+      );
+    }
+
+    if (this.input.wasPressed("KeyP")) {
+      const saved = SaveSystem.load();
+
+      if (!saved?.payload) {
+        this.settlement.addLog("No saved settlement state found.", "warning");
+        return;
+      }
+
+      this.restoreFromSave(saved.payload);
+    }
+  }
+
+  trySelectCharacterFromPointer(): any | null {
+    const pickX = this.input.isPointerLocked()
+      ? this.engine.getRenderWidth() * 0.5
+      : this.scene.pointerX;
+    const pickY = this.input.isPointerLocked()
+      ? this.engine.getRenderHeight() * 0.5
+      : this.scene.pointerY;
+    const hit = this.scene.pick(
+      pickX,
+      pickY,
+      (mesh: any) => Boolean(mesh?.metadata?.[AGENT_PICK_METADATA_KEY]),
+      false,
+      this.player.camera,
+    );
+
+    if (!hit?.hit || !hit.pickedMesh) {
+      return null;
+    }
+
+    return this.agentManager.selectAgentByPickedMesh(hit.pickedMesh);
+  }
+
+  restoreFromSave(payload: any): void {
+    for (const building of this.buildings.getBuildings()) {
+      this.world.setBlock(building.position.x, building.position.y, building.position.z, BLOCK_IDS.AIR);
+    }
+
+    this.buildings.clear();
+
+    for (const building of payload.buildings ?? []) {
+      this.world.setBlock(
+        building.position.x,
+        building.position.y,
+        building.position.z,
+        building.blockId,
+      );
+      this.buildings.restoreInstance(building);
+    }
+
+    this.settlement.restore(payload.settlement);
+    this.agentManager.restore(payload.agents);
+    this.world.rebuildAllDirtyChunks();
   }
 
   updateHud(): void {
@@ -221,17 +369,28 @@ export class SkyshardGame {
     const dashText = this.player.dashCooldown > 0.05
       ? `${this.player.dashCooldown.toFixed(1)}s`
       : "READY";
+    const surgePercent = Math.round((this.player.surgeCharge / CONFIG.surge.maxCharge) * 100);
+    const surgeText = this.player.surgeCharging ? `Surge Charge ${surgePercent}%` : `Surge ${surgePercent}%`;
 
     const statusText = this.input.isPointerLocked()
-      ? `Flight ${this.player.flightEnabled ? "ON" : "OFF"} | Dash ${dashText} | Hold fire, Q dash`
-      : "Click the viewport to lock the cursor. Use WASD + mouse to move and aim.";
+      ? `Flight ${this.player.flightEnabled ? "ON" : "OFF"} | Dash ${dashText} | ${surgeText}`
+      : `Click canvas to lock cursor. ${surgeText}`;
+
+    const selectedDefinition = getBuildingDefinitionForBlock(this.selectedBlockId);
+    const settlementState = this.settlement.getState(this.buildings, this.agentManager.getAgents());
 
     this.hud.update({
       statusText,
-      combatText: `Bolts: ${this.projectiles.getActiveProjectileCount()} active | Energy cost ${CONFIG.resources.projectileEnergyCost}`,
-      enemyText: this.enemyManager.getHudSummary(),
-      chunkText: `Chunks: ${this.world.loadedChunkCount} loaded | Edit radius ${CONFIG.world.maxTargetDistance}`,
-      targetText: `${targetText} | ${this.enemyManager.getPriorityLine()}`,
+      chunkText: `Chunks ${this.world.loadedChunkCount} | Edit radius ${CONFIG.world.maxTargetDistance}`,
+      targetText,
+      build: {
+        selectedSlot: this.selectedBuildSlot,
+        selectedBlockId: this.selectedBlockId,
+        selectedLabel: selectedDefinition?.label ?? "Unknown",
+        options: this.buildings.getBuildModeOptions(),
+      },
+      settlement: settlementState,
+      agents: this.agentManager.getHudState(),
       player: {
         hp: this.player.hp,
         maxHp: CONFIG.resources.maxHp,
@@ -239,6 +398,8 @@ export class SkyshardGame {
         maxStamina: CONFIG.resources.maxStamina,
         energy: this.player.energy,
         maxEnergy: CONFIG.resources.maxEnergy,
+        surgeActive: this.player.surgeCharging || this.player.surgeGlow > 0.02,
+        surgeStrength: this.player.surgeGlow,
       },
     });
   }
@@ -263,6 +424,9 @@ export class SkyshardGame {
       identity: CONFIG.identity.title,
       coordinateSystem: "Origin near spawn. +X east, +Y up, +Z south.",
       player: this.player.getDebugState(),
+      settlement: this.settlement.getState(this.buildings, this.agentManager.getAgents()),
+      buildings: this.buildings.getDebugState(),
+      agents: this.agentManager.getDebugState(),
       world: {
         loadedChunks: this.world.loadedChunkCount,
         target: this.currentTarget
@@ -272,10 +436,6 @@ export class SkyshardGame {
               z: this.currentTarget.voxel.z,
             }
           : null,
-      },
-      enemies: this.enemyManager.getDebugState(),
-      combat: {
-        activeProjectiles: this.projectiles.getActiveProjectileCount(),
       },
       camera: {
         position: {

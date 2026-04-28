@@ -7,10 +7,25 @@ export class InputManager {
     this.canvas = canvas;
     this.buttons = new Map();
     this.pointerLocked = false;
+    this.dragLooking = false;
+    this.trackpadLookScale = 0.45;
     this.lookDeltaX = 0;
     this.lookDeltaY = 0;
+    this.canvas.tabIndex = 0;
 
     window.addEventListener("keydown", (event) => {
+      if (
+        event.code === "Tab" ||
+        event.code.startsWith("Digit") ||
+        event.code === "KeyE" ||
+        event.code === "KeyR" ||
+        event.code === "KeyT" ||
+        event.code === "KeyO" ||
+        event.code === "KeyP"
+      ) {
+        event.preventDefault();
+      }
+
       this.setButton(event.code, true);
     });
 
@@ -19,25 +34,55 @@ export class InputManager {
     });
 
     window.addEventListener("mousedown", (event) => {
+      if (event.button === 0) {
+        this.dragLooking = true;
+        this.canvas.focus();
+      }
+
       if (event.button === 0 && document.pointerLockElement !== this.canvas) {
-        this.canvas.requestPointerLock();
+        this.requestPointerLockSafely();
       }
 
       this.setButton(this.mouseButtonToKey(event.button), true);
     });
 
     window.addEventListener("mouseup", (event) => {
+      if (event.button === 0) {
+        this.dragLooking = false;
+      }
+
       this.setButton(this.mouseButtonToKey(event.button), false);
     });
 
+    this.canvas.addEventListener("click", () => {
+      if (document.pointerLockElement !== this.canvas) {
+        this.requestPointerLockSafely();
+      }
+    });
+
     window.addEventListener("mousemove", (event) => {
-      if (!this.pointerLocked) {
+      if (!this.pointerLocked && !this.dragLooking) {
         return;
       }
 
       this.lookDeltaX += event.movementX;
       this.lookDeltaY += event.movementY;
     });
+
+    this.canvas.addEventListener(
+      "wheel",
+      (event) => {
+        if (this.pointerLocked) {
+          return;
+        }
+
+        this.canvas.focus();
+        this.lookDeltaX += event.deltaX * this.trackpadLookScale;
+        this.lookDeltaY += event.deltaY * this.trackpadLookScale;
+        event.preventDefault();
+      },
+      { passive: false },
+    );
 
     document.addEventListener("pointerlockchange", () => {
       this.pointerLocked = document.pointerLockElement === this.canvas;
@@ -51,6 +96,7 @@ export class InputManager {
 
     window.addEventListener("blur", () => {
       this.buttons.clear();
+      this.dragLooking = false;
       this.lookDeltaX = 0;
       this.lookDeltaY = 0;
     });
@@ -78,6 +124,24 @@ export class InputManager {
 
   isPointerLocked(): boolean {
     return this.pointerLocked;
+  }
+
+  requestPointerLockSafely(): void {
+    if (typeof this.canvas.requestPointerLock !== "function") {
+      return;
+    }
+
+    try {
+      const request = this.canvas.requestPointerLock();
+
+      if (request && typeof request.catch === "function") {
+        request.catch(() => {
+          this.pointerLocked = false;
+        });
+      }
+    } catch {
+      this.pointerLocked = false;
+    }
   }
 
   endFrame(): void {

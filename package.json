@@ -1,8 +1,8 @@
 {
-  "name": "skyshard-surge",
+  "name": "replica-commons",
   "private": true,
   "version": "0.1.0",
-  "description": "Original browser-based 3D voxel action prototype built with TypeScript, Vite, Babylon.js, and Rapier.",
+  "description": "Browser-based 3D voxel settlement sandbox with transparent pseudo-personality agent simulation.",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,7 +12,7 @@
     "typecheck:full": "tsc --noEmit",
     "cf:whoami": "wrangler whoami",
     "cf:dev": "wrangler pages dev dist",
-    "cf:deploy": "wrangler pages deploy dist --project-name skyshard-surge"
+    "cf:deploy": "wrangler pages deploy dist --project-name new-project-20260305-053022 --branch main"
   },
   "dependencies": {
     "@babylonjs/core": "^7.42.0",

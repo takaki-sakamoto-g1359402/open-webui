@@ -39,13 +39,11 @@ export class VoxelWorld {
   updateStreaming(centerPosition: any, rebuildLimit = 3): void {
     const centerChunkX = floorDiv(Math.floor(centerPosition.x), CONFIG.world.chunkSize);
     const centerChunkZ = floorDiv(Math.floor(centerPosition.z), CONFIG.world.chunkSize);
-    const desiredKeys = new Set();
 
     for (let dz = -CONFIG.world.loadRadius; dz <= CONFIG.world.loadRadius; dz += 1) {
       for (let dx = -CONFIG.world.loadRadius; dx <= CONFIG.world.loadRadius; dx += 1) {
         const chunkX = centerChunkX + dx;
         const chunkZ = centerChunkZ + dz;
-        desiredKeys.add(this.getChunkKey(chunkX, chunkZ));
         this.ensureChunk(chunkX, chunkZ);
       }
     }
@@ -59,18 +57,38 @@ export class VoxelWorld {
       }
     }
 
+    const priorityRadius = 1;
     let rebuilt = 0;
+    const dirtyChunks = Array.from(this.chunks.values())
+      .filter((chunk) => chunk.dirty)
+      .sort((a, b) => {
+        const aDistance = Math.max(Math.abs(a.cx - centerChunkX), Math.abs(a.cz - centerChunkZ));
+        const bDistance = Math.max(Math.abs(b.cx - centerChunkX), Math.abs(b.cz - centerChunkZ));
 
-    for (const chunk of this.chunks.values()) {
-      if (!chunk.dirty) {
-        continue;
+        if (aDistance !== bDistance) {
+          return aDistance - bDistance;
+        }
+
+        const aManhattan = Math.abs(a.cx - centerChunkX) + Math.abs(a.cz - centerChunkZ);
+        const bManhattan = Math.abs(b.cx - centerChunkX) + Math.abs(b.cz - centerChunkZ);
+        return aManhattan - bManhattan;
+      });
+
+    for (const chunk of dirtyChunks) {
+      const distance = Math.max(
+        Math.abs(chunk.cx - centerChunkX),
+        Math.abs(chunk.cz - centerChunkZ),
+      );
+      const isPriorityChunk = distance <= priorityRadius;
+
+      if (!isPriorityChunk && rebuilt >= rebuildLimit) {
+        break;
       }
 
       this.rebuildChunk(chunk);
-      rebuilt += 1;
 
-      if (rebuilt >= rebuildLimit) {
-        break;
+      if (!isPriorityChunk) {
+        rebuilt += 1;
       }
     }
 
