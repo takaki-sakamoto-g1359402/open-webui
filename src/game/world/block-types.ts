@@ -7,6 +7,11 @@ export const BLOCK_IDS = Object.freeze({
   STONE: 3,
   CRYSTAL: 4,
   LIGHTSTONE: 5,
+  HOUSE: 6,
+  STORAGE: 7,
+  WORKSHOP: 8,
+  ROAD: 9,
+  CIVIC: 10,
 });
 
 export const BLOCK_LIBRARY: Record<number, { id: number; name: string; solid: boolean; placeable: boolean; color: number[] }> = {
@@ -51,6 +56,41 @@ export const BLOCK_LIBRARY: Record<number, { id: number; name: string; solid: bo
     solid: true,
     placeable: true,
     color: [0.96, 0.88, 0.42],
+  },
+  [BLOCK_IDS.HOUSE]: {
+    id: BLOCK_IDS.HOUSE,
+    name: "House Marker",
+    solid: true,
+    placeable: true,
+    color: [0.86, 0.52, 0.34],
+  },
+  [BLOCK_IDS.STORAGE]: {
+    id: BLOCK_IDS.STORAGE,
+    name: "Storage Crate",
+    solid: true,
+    placeable: true,
+    color: [0.72, 0.58, 0.34],
+  },
+  [BLOCK_IDS.WORKSHOP]: {
+    id: BLOCK_IDS.WORKSHOP,
+    name: "Workshop Bench",
+    solid: true,
+    placeable: true,
+    color: [0.42, 0.66, 0.86],
+  },
+  [BLOCK_IDS.ROAD]: {
+    id: BLOCK_IDS.ROAD,
+    name: "Road Paver",
+    solid: true,
+    placeable: true,
+    color: [0.35, 0.38, 0.36],
+  },
+  [BLOCK_IDS.CIVIC]: {
+    id: BLOCK_IDS.CIVIC,
+    name: "Civic Beacon",
+    solid: true,
+    placeable: true,
+    color: [0.78, 0.46, 0.9],
   },
 };
 

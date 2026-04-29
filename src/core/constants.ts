@@ -2,8 +2,8 @@
 
 export const CONFIG = {
   identity: {
-    title: "Skyshard Surge",
-    subtitle: "Original voxel action prototype",
+    title: "Aether Atelier",
+    subtitle: "Anime character voxel personality sandbox",
   },
   debug: {
     fixedStep: 1 / 60,
@@ -71,6 +71,16 @@ export const CONFIG = {
     projectileDirectHitBonus: 18,
     fireCooldown: 0.14,
     projectilePoolSize: 24,
+  },
+  surge: {
+    maxCharge: 100,
+    chargeGainPerSecond: 55,
+    chargeDecayPerSecond: 12,
+    energyGainPerSecond: 34,
+    staminaGainPerSecond: 40,
+    movementMultiplier: 0.22,
+    glowInPerSecond: 4.5,
+    glowOutPerSecond: 2.2,
   },
   dummy: {
     maxHp: 120,

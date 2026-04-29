@@ -41,6 +41,9 @@ export class PlayerController {
     this.coyoteTimer = 0;
     this.jumpBufferTimer = 0;
     this.damageInvulnerability = 0;
+    this.surgeCharging = false;
+    this.surgeCharge = 0;
+    this.surgeGlow = 0;
     this.hp = CONFIG.resources.maxHp;
     this.stamina = CONFIG.resources.maxStamina;
     this.energy = CONFIG.resources.maxEnergy;
@@ -112,20 +115,52 @@ export class PlayerController {
     }
 
     const movementInput = this.getMovementIntent();
+    const charging = this.input.isDown("KeyX");
     const sprinting =
       (this.input.isDown("ShiftLeft") || this.input.isDown("ShiftRight")) &&
-      movementInput.lengthSquared() > 0;
+      movementInput.lengthSquared() > 0 &&
+      !charging;
+
+    this.surgeCharging = charging;
+
+    if (this.surgeCharging) {
+      this.dashRemaining = 0;
+      this.velocity.x = moveToward(this.velocity.x, 0, CONFIG.player.groundDeceleration * 1.6 * deltaSeconds);
+      this.velocity.z = moveToward(this.velocity.z, 0, CONFIG.player.groundDeceleration * 1.6 * deltaSeconds);
+      this.stamina = Math.min(
+        CONFIG.resources.maxStamina,
+        this.stamina + CONFIG.surge.staminaGainPerSecond * deltaSeconds,
+      );
+      this.energy = Math.min(
+        CONFIG.resources.maxEnergy,
+        this.energy + CONFIG.surge.energyGainPerSecond * deltaSeconds,
+      );
+      this.surgeCharge = Math.min(
+        CONFIG.surge.maxCharge,
+        this.surgeCharge + CONFIG.surge.chargeGainPerSecond * deltaSeconds,
+      );
+      this.surgeGlow = Math.min(1, this.surgeGlow + CONFIG.surge.glowInPerSecond * deltaSeconds);
+    } else {
+      this.surgeCharge = Math.max(
+        0,
+        this.surgeCharge - CONFIG.surge.chargeDecayPerSecond * deltaSeconds,
+      );
+      this.surgeGlow = Math.max(0, this.surgeGlow - CONFIG.surge.glowOutPerSecond * deltaSeconds);
+    }
 
     if (this.dashRemaining > 0) {
       this.dashRemaining = Math.max(0, this.dashRemaining - deltaSeconds);
       this.velocity.copyFrom(this.dashDirection).scaleInPlace(CONFIG.player.dashSpeed);
     } else if (this.flightEnabled) {
-      const flightTarget = movementInput.scale(CONFIG.player.flightSpeed);
+      const flightSpeed = this.surgeCharging
+        ? CONFIG.player.flightSpeed * CONFIG.surge.movementMultiplier
+        : CONFIG.player.flightSpeed;
+      const flightTarget = movementInput.scale(flightSpeed);
       const verticalIntent =
         (this.input.isDown("Space") ? 1 : 0) -
         (this.input.isDown("ControlLeft") || this.input.isDown("KeyC") ? 1 : 0);
 
-      flightTarget.y = verticalIntent * CONFIG.player.flightSpeed * 0.65;
+      flightTarget.y = verticalIntent * flightSpeed * 0.65;
 
       if (sprinting && this.stamina > 0) {
         flightTarget.scaleInPlace(CONFIG.player.flightSprintMultiplier);
@@ -148,7 +183,9 @@ export class PlayerController {
     } else {
       const targetSpeed =
         sprinting && this.stamina > 0 ? CONFIG.player.sprintSpeed : CONFIG.player.walkSpeed;
-      const horizontalTarget = movementInput.scale(targetSpeed);
+      const horizontalTarget = movementInput.scale(
+        this.surgeCharging ? targetSpeed * CONFIG.surge.movementMultiplier : targetSpeed,
+      );
       const acceleration = this.grounded ? CONFIG.player.groundAcceleration : CONFIG.player.airAcceleration;
       const deceleration = this.grounded ? CONFIG.player.groundDeceleration : CONFIG.player.airDeceleration;
       const accelStep = acceleration * deltaSeconds;
@@ -207,7 +244,7 @@ export class PlayerController {
 
   getMovementIntent(): any {
     const forwardFlat = new BABYLON.Vector3(Math.sin(this.yaw), 0, Math.cos(this.yaw));
-    const rightFlat = new BABYLON.Vector3(forwardFlat.z, 0, -forwardFlat.x);
+    const rightFlat = new BABYLON.Vector3(-forwardFlat.z, 0, forwardFlat.x);
     const xInput = (this.input.isDown("KeyD") ? 1 : 0) - (this.input.isDown("KeyA") ? 1 : 0);
     const zInput = (this.input.isDown("KeyW") ? 1 : 0) - (this.input.isDown("KeyS") ? 1 : 0);
     const movementIntent = forwardFlat.scale(zInput).add(rightFlat.scale(xInput));
@@ -441,6 +478,9 @@ export class PlayerController {
       jumpBuffer: Number(this.jumpBufferTimer.toFixed(2)),
       coyoteTime: Number(this.coyoteTimer.toFixed(2)),
       damageInvulnerability: Number(this.damageInvulnerability.toFixed(2)),
+      surgeCharging: this.surgeCharging,
+      surgeCharge: Number(this.surgeCharge.toFixed(1)),
+      surgeGlow: Number(this.surgeGlow.toFixed(2)),
       hp: Number(this.hp.toFixed(1)),
       stamina: Number(this.stamina.toFixed(1)),
       energy: Number(this.energy.toFixed(1)),

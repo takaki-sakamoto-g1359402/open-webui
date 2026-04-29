@@ -283,3 +283,68 @@ Remaining follow-up after this migration:
 - Replace `@ts-nocheck` file guards with real shared types as subsystems stabilize.
 - Investigate whether `tsc --noEmit` can be made practical again in this environment once type surfaces are reduced further.
 - Split or lazy-load Babylon-heavy code paths to reduce production bundle size and build time.
+
+Update 2026-04-03 (chunk collision visibility fix):
+- Investigated reports of “airborne” collisions where the player could hit terrain before nearby chunks were visibly drawn.
+- Root cause hypothesis: streamed chunks were becoming logically solid as soon as block data existed, while mesh rebuilds were still throttled and processed in insertion order.
+- Updated `src/game/world/voxel-world.ts` so dirty chunks are now sorted by distance to the player chunk before rebuild.
+- Added a small priority radius (`1` chunk) that always rebuilds the player-neighborhood first, then applies the normal rebuild budget to farther chunks.
+- Mirrored the same logic into the currently served `dist/assets/index-BBYtR8l9.js` preview bundle so the fix is immediately testable on the local preview URL.
+
+Validation 2026-04-03 (chunk collision visibility fix):
+- Confirmed the source file contains the new priority rebuild path in `updateStreaming()`.
+- Confirmed the served `dist` bundle contains the matching prioritized `updateStreaming()` logic.
+- Attempted to rerun the lightweight TypeScript validation script, but the validation command hung in this environment and did not produce a result.
+
+Recommended follow-up after live verification:
+- Fly quickly toward chunk boundaries and confirm the terrain appears before collision is felt.
+- If rare invisible collisions remain at long range, increase the priority radius or rebuild budget slightly before changing collision rules.
+
+Update 2026-04-28 (anime character settlement MVP):
+- User requested executing the voxel sandbox idea with cute original female/anime-style characters and Cloudflare deployment.
+- Renamed the active MVP presentation to `Aether Atelier`.
+- Added explicit character visual profile data to `src/game/personality/personality-types.ts` and `src/game/personality/sample-profiles.ts`.
+- Replaced generic agent names with five original companion characters:
+  - Aoi Rin
+  - Mira Kisaragi
+  - Sena Vale
+  - Hana Sol
+  - Koharu Finch
+- Rebuilt `AgentManager.createAgentMesh()` around low-poly, browser-friendly stylized character meshes made from Babylon primitives:
+  - modest outfit silhouette
+  - hair, bangs, side locks/tails
+  - face/eye details
+  - role marker
+  - selected-character ring
+- Added direct character picking through Babylon mesh metadata, while preserving `Tab` inspection.
+- Updated HUD text so selected character panels show archetype and visual theme alongside personality drivers.
+- Hardened pointer-lock requests in `InputManager` so iframe/in-app-browser environments do not emit unhandled SecurityErrors.
+- Updated `README.md` controls and feature summary for the character-focused MVP.
+
+Validation 2026-04-28:
+- Ran `node ./scripts/validate-types.mjs` successfully:
+  - `Validated 24 TypeScript files with transpile + import checks.`
+- Ran production Vite build successfully with the bundled Node runtime:
+  - output written to `dist`
+  - main bundle remains about 3.0 MB before gzip, so bundle splitting remains a future optimization
+- Playwright web-game client could not run because Chromium launch is blocked by the macOS sandbox with a MachPort permission error.
+- Used the Codex in-app browser against local Vite preview at `http://127.0.0.1:4174/`.
+- Visually confirmed:
+  - `Aether Atelier` title renders
+  - voxel world renders
+  - low-poly anime-style characters are visible in-world
+  - `Tab` character inspection selects Mira Kisaragi
+  - `T` directive cycling updates Mira to `Stockpile food`
+  - HUD shows character archetype, visual theme, needs, goals, task queue, memory/feed, and comparison rows
+- After pointer-lock hardening, old console logs from the prior tab still remained in the in-app-browser log buffer, but no new pointer-lock error was observed in the visible QA flow.
+
+Remaining TODOs / suggestions:
+- Deploy `dist` to Cloudflare Pages and verify the returned public URL.
+- Add real GLB character asset import support later, using the current profile `character` data as the gameplay-facing authoring layer.
+- Split Babylon-heavy bundles with manual chunks or route-level lazy loading before a production release.
+
+Deployment blocker 2026-04-28:
+- `wrangler whoami` failed because Wrangler is not logged in and cannot write its log file outside the workspace sandbox.
+- The existing direct deployment helper also failed with Cloudflare API `401 Authentication error`.
+- The connected Cloudflare API MCP can read the Pages project, but the `/upload-token` endpoint returned `10000: Authentication error`, so it could not be used as a substitute for local Wrangler auth.
+- Next required step is to refresh Cloudflare deployment credentials, for example by running Wrangler login locally or providing a Pages-edit API token in `CLOUDFLARE_API_TOKEN`, then rerun the deploy command.
