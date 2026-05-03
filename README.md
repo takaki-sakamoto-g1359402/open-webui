@@ -59,6 +59,37 @@ If local Wrangler auth is unavailable, the repo also has a direct deploy helper:
 /Users/sakamototakaki/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/deploy-pages.mjs --directory dist --project new-project-20260305-053022 --account-id 751eaafd005857ababca40d6af72b843 --branch main
 ```
 
+## FounderVerse WebGL Demo Deployment
+
+FounderVerse can be distributed as a Unity WebGL demo through Cloudflare Pages.
+
+Recommended deployment flow:
+
+1. Open the Unity project.
+2. Switch Platform to WebGL.
+3. Build to `Build/WebGL`.
+4. Confirm `index.html`, `Build/`, and `TemplateData/` exist.
+5. Add `_headers` if compressed WebGL files are used.
+6. Deploy `Build/WebGL` to Cloudflare Pages.
+7. Copy the generated `pages.dev` URL.
+8. Share the URL privately with alpha testers.
+
+Demo URL:
+
+```text
+TBD after successful deployment
+```
+
+Detailed deployment and release checks:
+
+- [docs/Deploy_Unity_WebGL_Cloudflare_Pages.md](docs/Deploy_Unity_WebGL_Cloudflare_Pages.md)
+- [docs/FounderVerse_Distribution_Checklist.md](docs/FounderVerse_Distribution_Checklist.md)
+- [docs/FounderVerse_Deployment_Status.md](docs/FounderVerse_Deployment_Status.md)
+
+Important:
+
+This MVP uses mock data only. It does not collect real identity documents. It does not connect to KYC vendors, payment providers, government APIs, or external identity providers. It only demonstrates platform-level verification states and room access rules.
+
 ## Safety Framing
 
 Pseudo-personality agents are explicit in-game simulation profiles. They are not real identity replicas, impersonation systems, authentication artifacts, or hidden influence tools. The MVP keeps behavior rule-based and inspectable.
