@@ -85,6 +85,7 @@ Detailed deployment and release checks:
 - [docs/Deploy_Unity_WebGL_Cloudflare_Pages.md](docs/Deploy_Unity_WebGL_Cloudflare_Pages.md)
 - [docs/FounderVerse_Distribution_Checklist.md](docs/FounderVerse_Distribution_Checklist.md)
 - [docs/FounderVerse_Deployment_Status.md](docs/FounderVerse_Deployment_Status.md)
+- [docs/FounderVerse_Unity_Build_Automation.md](docs/FounderVerse_Unity_Build_Automation.md)
 
 Important:
 

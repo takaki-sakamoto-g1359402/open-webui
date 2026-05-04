@@ -199,6 +199,12 @@ docs/templates/founderverse-webgl-headers-stable.txt
 docs/templates/founderverse-webgl-headers-native-compression.txt
 ```
 
+For repeatable Unity Editor or batchmode builds, use the automation guide:
+
+```text
+docs/FounderVerse_Unity_Build_Automation.md
+```
+
 ### Stable Header Set
 
 Use this when `Compression Format` is `Disabled`, or when `Gzip`/`Brotli` is paired with `Decompression Fallback` and Unity emits `.unityweb` assets:

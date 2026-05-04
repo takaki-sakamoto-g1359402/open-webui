@@ -17,6 +17,8 @@ docs/Deploy_Unity_WebGL_Cloudflare_Pages.md
 docs/FounderVerse_Distribution_Checklist.md
 docs/templates/founderverse-webgl-headers-stable.txt
 docs/templates/founderverse-webgl-headers-native-compression.txt
+tools/unity/FounderVerseWebGLBuild.cs
+tools/unity/build-founderverse-webgl.sh
 public/_headers
 dist/_headers
 wrangler.jsonc
@@ -50,6 +52,9 @@ Repository validation completed:
 TypeScript import/transpile validation: passed
 Vite production build: passed
 Local browser preview smoke test: passed for the current Aether Atelier app
+Unity build automation scaffold: added, not executed
+Unity build shell wrapper syntax: passed
+Unity build shell wrapper execution: blocked as expected, Unity Editor executable was not found
 Unity WebGL build: not run, because Unity project files are not present
 Cloudflare Pages deploy: not run, because Build/WebGL is missing and Wrangler is not authenticated
 ```
@@ -69,11 +74,12 @@ On the machine or folder that contains the FounderVerse Unity project:
 
 ```text
 1. Open the Unity project.
-2. Switch platform to WebGL.
-3. Build to Build/WebGL.
-4. Copy one of the docs/templates header files to Build/WebGL/_headers.
-5. Deploy Build/WebGL through Cloudflare Pages Direct Upload or Wrangler.
-6. Record the generated pages.dev URL in README.md.
+2. Copy tools/unity/FounderVerseWebGLBuild.cs into Assets/Editor.
+3. Run FounderVerse > Build > Validate WebGL Build Settings.
+4. Build to Build/WebGL from Unity Editor or tools/unity/build-founderverse-webgl.sh.
+5. Confirm Build/WebGL/_headers exists.
+6. Deploy Build/WebGL through Cloudflare Pages Direct Upload or Wrangler.
+7. Record the generated pages.dev URL in README.md.
 ```
 
 Use the stable header template for `Disabled` compression or `Gzip/Brotli` with `Decompression Fallback` enabled:
