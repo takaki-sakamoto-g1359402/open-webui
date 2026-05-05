@@ -86,6 +86,24 @@ Build/WebGL/_headers
 
 Upload `Build/WebGL`, not the parent `Build` folder, to Cloudflare Pages Direct Upload.
 
+## Validate Before Upload
+
+After a Unity build finishes, run:
+
+```bash
+node ./scripts/validate-founderverse-webgl.mjs \
+  --unity-project "/path/to/FounderVerseUnityProject" \
+  --webgl-build "/path/to/FounderVerseUnityProject/Build/WebGL"
+```
+
+For local status reporting without failing when the Unity project is not present yet:
+
+```bash
+node ./scripts/validate-founderverse-webgl.mjs --warn-only --check-wrangler-auth --isolated-wrangler-home
+```
+
+The validator checks Unity project markers, WebGL output files, Cloudflare `_headers`, compressed asset headers, obvious sensitive files, Unity Editor availability, and optional Wrangler authentication.
+
 ## Current Limitation
 
 This workspace does not currently contain the Unity project or Unity Editor executable, so the automation is prepared but not executed here.

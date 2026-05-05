@@ -205,6 +205,12 @@ For repeatable Unity Editor or batchmode builds, use the automation guide:
 docs/FounderVerse_Unity_Build_Automation.md
 ```
 
+After the Unity build finishes, run the deployment validator before upload:
+
+```bash
+node ./scripts/validate-founderverse-webgl.mjs --unity-project "/path/to/FounderVerseUnityProject" --webgl-build "/path/to/FounderVerseUnityProject/Build/WebGL"
+```
+
 ### Stable Header Set
 
 Use this when `Compression Format` is `Disabled`, or when `Gzip`/`Brotli` is paired with `Decompression Fallback` and Unity emits `.unityweb` assets:
