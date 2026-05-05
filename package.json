@@ -10,6 +10,8 @@
     "preview": "vite preview",
     "typecheck": "node ./scripts/validate-types.mjs",
     "typecheck:full": "tsc --noEmit",
+    "fv:validate-webgl": "node ./scripts/validate-founderverse-webgl.mjs",
+    "fv:validate-webgl:local": "node ./scripts/validate-founderverse-webgl.mjs --warn-only --check-wrangler-auth --isolated-wrangler-home",
     "cf:whoami": "wrangler whoami",
     "cf:dev": "wrangler pages dev dist",
     "cf:deploy": "wrangler pages deploy dist --project-name new-project-20260305-053022 --branch main"

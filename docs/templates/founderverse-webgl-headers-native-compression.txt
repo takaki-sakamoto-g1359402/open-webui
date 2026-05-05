@@ -1,0 +1,27 @@
+/Build/*.wasm.gz
+  Content-Type: application/wasm
+  Content-Encoding: gzip
+
+/Build/*.js.gz
+  Content-Type: application/javascript
+  Content-Encoding: gzip
+
+/Build/*.data.gz
+  Content-Type: application/octet-stream
+  Content-Encoding: gzip
+
+/Build/*.wasm.br
+  Content-Type: application/wasm
+  Content-Encoding: br
+
+/Build/*.js.br
+  Content-Type: application/javascript
+  Content-Encoding: br
+
+/Build/*.data.br
+  Content-Type: application/octet-stream
+  Content-Encoding: br
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
