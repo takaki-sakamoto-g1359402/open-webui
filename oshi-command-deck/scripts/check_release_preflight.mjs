@@ -14,6 +14,7 @@ recordRepositoryFiles();
 recordToolchain();
 recordSupabaseTools();
 recordVercelCron();
+recordVercelPreviewConfig();
 recordProductionEnv();
 recordReleasePreviewEvidence();
 
@@ -46,6 +47,8 @@ function recordRepositoryFiles() {
     "pnpm-lock.yaml",
     "pnpm-workspace.yaml",
     "vercel.json",
+    "vercel.preview.json",
+    "vercel.production.json",
     "next.config.ts",
     ".env.example",
     "public/manifest.webmanifest",
@@ -66,6 +69,7 @@ function recordRepositoryFiles() {
     "supabase/smoke/0005_api_rate_limit_rpc.sql",
     "scripts/validate_production_config.mjs",
     "scripts/check_local_supabase_prereqs.mjs",
+    "scripts/deploy_vercel_preview.mjs",
     "scripts/run_supabase_smoke.mjs",
     "scripts/run_production_dry_run.mjs",
     "scripts/validate_release_preview_manifest.mjs"
@@ -146,11 +150,12 @@ function recordSupabaseTools() {
 }
 
 function recordVercelCron() {
-  const vercelPath = "vercel.json";
+  recordCronFreeVercelConfig("vercel.json", "Vercel root deploy config omits Cron");
+  const vercelPath = "vercel.production.json";
   if (!existsSync(resolve(root, vercelPath))) {
     addCheck({
       category: "vercel",
-      label: "vercel.json exists",
+      label: "vercel.production.json exists",
       ok: false,
       level: "error",
       detail: vercelPath
@@ -163,7 +168,7 @@ function recordVercelCron() {
     config = JSON.parse(readFileSync(resolve(root, vercelPath), "utf8"));
     addCheck({
       category: "vercel",
-      label: "vercel.json parses",
+      label: "vercel.production.json parses",
       ok: true,
       level: "error",
       detail: vercelPath
@@ -171,7 +176,7 @@ function recordVercelCron() {
   } catch (error) {
     addCheck({
       category: "vercel",
-      label: "vercel.json parses",
+      label: "vercel.production.json parses",
       ok: false,
       level: "error",
       detail: error instanceof Error ? error.message : "invalid JSON"
@@ -194,6 +199,82 @@ function recordVercelCron() {
       ok: Boolean(match) && match.schedule === job.schedule,
       level: "error",
       detail: `expected ${job.schedule}`
+    });
+  }
+}
+
+function recordVercelPreviewConfig() {
+  const previewPath = "vercel.preview.json";
+  if (!existsSync(resolve(root, previewPath))) {
+    addCheck({
+      category: "vercel",
+      label: "Vercel Hobby preview config exists",
+      ok: false,
+      level: "error",
+      detail: previewPath
+    });
+    return;
+  }
+
+  let config;
+  try {
+    config = JSON.parse(readFileSync(resolve(root, previewPath), "utf8"));
+    addCheck({
+      category: "vercel",
+      label: "Vercel Hobby preview config parses",
+      ok: true,
+      level: "error",
+      detail: previewPath
+    });
+  } catch (error) {
+    addCheck({
+      category: "vercel",
+      label: "Vercel Hobby preview config parses",
+      ok: false,
+      level: "error",
+      detail: error instanceof Error ? error.message : "invalid JSON"
+    });
+    return;
+  }
+
+  addCheck({
+    category: "vercel",
+    label: "Vercel Hobby preview config omits Cron",
+    ok: config.crons === undefined,
+    level: "error",
+    detail: "vercel.preview.json must stay cron-free so DEMO previews can deploy on Hobby accounts.",
+    nextStep: "Use vercel.json for production Cron readiness and vercel.preview.json only through pnpm deploy:vercel-preview."
+  });
+}
+
+function recordCronFreeVercelConfig(path, label) {
+  if (!existsSync(resolve(root, path))) {
+    addCheck({
+      category: "vercel",
+      label,
+      ok: false,
+      level: "error",
+      detail: path
+    });
+    return;
+  }
+
+  try {
+    const config = JSON.parse(readFileSync(resolve(root, path), "utf8"));
+    addCheck({
+      category: "vercel",
+      label,
+      ok: config.crons === undefined,
+      level: "error",
+      detail: `${path} must stay cron-free for Hobby-compatible previews.`
+    });
+  } catch (error) {
+    addCheck({
+      category: "vercel",
+      label,
+      ok: false,
+      level: "error",
+      detail: error instanceof Error ? error.message : "invalid JSON"
     });
   }
 }

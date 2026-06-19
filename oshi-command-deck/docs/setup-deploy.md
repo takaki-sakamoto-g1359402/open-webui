@@ -80,7 +80,15 @@ pnpm check:release-preflight -- --strict-production --env-file .env.production.l
 pnpm verify:production-config -- --strict-production --env-file .env.production.local
 ```
 
-The release preflight additionally reports missing repo release files, Node/Corepack/pnpm drift, Supabase CLI/Docker/`psql` availability, Vercel cron route drift, and missing release preview evidence. The strict production profile fails if public or server demo mode is still enabled, public reads are not set to `STREAMS_READ_SOURCE=supabase`, the public contact channel is missing, admin or cron tokens are weak or reused across both roles, Supabase persistence credentials are incomplete, `RATE_LIMIT_BACKEND=supabase` is missing `RATE_LIMIT_KEY_SALT`, no persistent/host rate limiter is configured, no official provider registry is configured, provider registries still contain demo IDs, Push is partially configured, or AI fallback is enabled without its server-only credentials.
+The release preflight additionally reports missing repo release files, Node/Corepack/pnpm drift, Supabase CLI/Docker/`psql` availability, production Vercel cron route drift from `vercel.production.json`, and missing release preview evidence. The strict production profile fails if public or server demo mode is still enabled, public reads are not set to `STREAMS_READ_SOURCE=supabase`, the public contact channel is missing, admin or cron tokens are weak or reused across both roles, Supabase persistence credentials are incomplete, `RATE_LIMIT_BACKEND=supabase` is missing `RATE_LIMIT_KEY_SALT`, no persistent/host rate limiter is configured, no official provider registry is configured, provider registries still contain demo IDs, Push is partially configured, or AI fallback is enabled without its server-only credentials.
+
+For a public DEMO-mode user-test URL on a Vercel Hobby account, use the preview-only config that omits Cron:
+
+```bash
+pnpm deploy:vercel-preview
+```
+
+The command deploys a public Vercel production-target URL with `vercel.preview.json`, `NEXT_PUBLIC_DEMO_MODE=true`, `OSHI_DEMO_MODE=true`, `STREAMS_READ_SOURCE=adapters`, `RATE_LIMIT_BACKEND=memory`, and a protected Admin token. If `PREVIEW_ADMIN_JOB_TOKEN` or `ADMIN_JOB_TOKEN` is not already set, the runner generates an ephemeral token and does not print it. This is for labeled user-test demos only, not production readiness proof. Production and credentialed staging should use the Cron contract in `vercel.production.json`, then promote that config through the production Vercel project, branch, or deployment process.
 
 With a production build running locally or on staging, run the read-only route smoke:
 
@@ -198,7 +206,9 @@ The script writes viewport screenshots and `release-preview-manifest-<locale>.js
 
 ## Vercel Jobs
 
-`vercel.json` defines `/api/jobs/ingest` every 30 minutes, `/api/jobs/alerts` every 10 minutes, and `/api/jobs/retention` daily. All three routes require:
+`vercel.production.json` records the production Cron contract: `/api/jobs/ingest` every 30 minutes, `/api/jobs/alerts` every 10 minutes, and `/api/jobs/retention` daily. Root `vercel.json` and `vercel.preview.json` intentionally omit Cron so Hobby-hosted DEMO previews can deploy. Vercel Hobby accounts only allow Cron schedules that run once per day; use Pro, the production Vercel project config, or another scheduler for the production ingest/alert frequencies in `vercel.production.json`.
+
+All three job routes require:
 
 ```http
 Authorization: Bearer <ADMIN_JOB_TOKEN or CRON_SECRET>
@@ -228,7 +238,7 @@ Before public launch:
 - Run `pnpm verify:production-config -- --strict-production --env-file .env.production.local` against the exact env values planned for production, including both `ADMIN_JOB_TOKEN` and Vercel `CRON_SECRET`, plus either `RATE_LIMIT_BACKEND=supabase` with `RATE_LIMIT_KEY_SALT` or `HOST_RATE_LIMIT_CONFIGURED=true`.
 - Run `pnpm verify:rls` after any migration or RPC change that touches public reads, admin helpers, creator registry writes, corrections, audit logs, push subscription storage, or provider raw payloads.
 - Run `pnpm verify:release-smoke` after changing smoke commands, release docs, or staging dry-run scripts.
-- Run `pnpm check:release-preflight -- --strict-production --env-file .env.production.local` before public launch to combine repo release files, external tool availability, Vercel cron definitions, strict env validation, and preview evidence in one operator report. This command is intentionally separate from `pnpm verify` because it depends on external tooling and real deployment values.
+- Run `pnpm check:release-preflight -- --strict-production --env-file .env.production.local` before public launch to combine repo release files, external tool availability, production Vercel cron definitions from `vercel.production.json`, strict env validation, and preview evidence in one operator report. This command is intentionally separate from `pnpm verify` because it depends on external tooling and real deployment values.
 - Run `pnpm check:supabase-local` before local Supabase stack work to confirm the CLI, Docker runtime, `psql`, migration, seed, and smoke SQL prerequisites are present.
 - Run `pnpm smoke:production-dry-run -- --strict` against a running production build or staging deployment with `ADMIN_JOB_TOKEN` and `CRON_SECRET` configured. For local release smoke after `pnpm build`, use `ADMIN_JOB_TOKEN=... CRON_SECRET=... pnpm smoke:production-dry-run -- --strict --start-server`; it reuses an already reachable base URL or starts a matching Next production server for the selected `--base-url` and stops it after the read-only checks finish. The strict smoke checks unauthenticated `persist=1` rejection, Admin API unauthenticated gates, authenticated Admin read APIs, non-writing Admin validation failures, cron-token isolation from Admin APIs, runtime security headers, a real `admin-login` 429 header/body probe, and the hosted cron header path with `Authorization: Bearer <CRON_SECRET>` for ingest, alerts, and retention dry-runs.
 - Run `pnpm test:e2e:admin` to exercise the protected Admin login/unlock UI in a dedicated local production server profile. This complements the default demo-mode E2E and keeps the protected route from staying skipped in normal release verification.

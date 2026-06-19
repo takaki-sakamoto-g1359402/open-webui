@@ -20,7 +20,8 @@ This audit is intentionally stricter than the local demo. The app can run and be
 - `pnpm verify:release-previews` validates generated preview manifests, screenshot files, viewport classes, `lang`/`dir`, horizontal overflow, interactive controls, and protected Admin authorization evidence.
 - The production dry-run checks unauthenticated `persist=1` rejection, unauthenticated Admin API rejection, authenticated Admin read APIs, non-writing Admin payload validation failures, and verifies `CRON_SECRET` cannot unlock Admin APIs.
 - `pnpm smoke:production-dry-run -- --strict --start-server --expect-read-source supabase` confirms `/api/streams` stays on the Supabase public read path when production public reads are selected.
-- `pnpm check:release-preflight` now combines repository release files, Node/Corepack/pnpm, Supabase CLI/Docker/psql, Vercel cron definitions, production env validation, and release preview evidence into one operator-facing readiness report.
+- `pnpm check:release-preflight` now combines repository release files, Node/Corepack/pnpm, Supabase CLI/Docker/psql, production Vercel cron definitions from `vercel.production.json`, production env validation, and release preview evidence into one operator-facing readiness report.
+- `pnpm deploy:vercel-preview` provides a public DEMO-mode Vercel path using `vercel.preview.json`, protected Admin token env, and no Cron so Hobby accounts can host user-test URLs without weakening production `vercel.production.json`.
 - `pnpm check:supabase-local` now finds the repository-owned migration, seed, smoke SQL, and `supabase/config.toml` before checking external local tools.
 - `.node-version` and the Corepack setup instructions pin the expected local Node/pnpm bootstrap path for contributors and CI-like shells.
 
@@ -51,6 +52,7 @@ supabase db reset
 SUPABASE_DB_URL=postgresql://... pnpm smoke:supabase
 pnpm verify:security-headers
 pnpm verify:production-config -- --strict-production --env-file .env.production.local
+pnpm deploy:vercel-preview
 ADMIN_JOB_TOKEN=... CRON_SECRET=... pnpm smoke:production-dry-run -- --strict --base-url https://staging.example.com --expect-read-source supabase
 pnpm test:e2e:admin
 PREVIEW_ADMIN_TOKEN=... pnpm capture:release-previews
@@ -93,6 +95,7 @@ The production env must satisfy all of these before public release:
 - X rate limits: https://docs.x.com/x-api/fundamentals/rate-limits
 - Vercel WAF rate limiting: https://vercel.com/docs/vercel-firewall/vercel-waf/rate-limiting
 - Vercel Cron Jobs: https://vercel.com/docs/cron-jobs/manage-cron-jobs
+- Vercel Cron usage and Hobby limits: https://vercel.com/docs/cron-jobs/usage-and-pricing
 - Next.js headers: https://nextjs.org/docs/app/api-reference/config/next-config-js/headers
 
 ## Completion Rule

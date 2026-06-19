@@ -19,6 +19,7 @@
     "test:pwa": "playwright test -c playwright.pwa.config.ts",
     "capture:desktop-previews": "node scripts/capture_desktop_previews.mjs",
     "capture:release-previews": "node scripts/capture_desktop_previews.mjs",
+    "deploy:vercel-preview": "node scripts/deploy_vercel_preview.mjs",
     "verify:release-previews": "node scripts/validate_release_preview_manifest.mjs",
     "check:release-preflight": "node scripts/check_release_preflight.mjs",
     "check:supabase-local": "node scripts/check_local_supabase_prereqs.mjs",

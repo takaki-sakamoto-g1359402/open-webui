@@ -6,12 +6,16 @@ const files = {
   packageJson: "package.json",
   envExample: ".env.example",
   releasePreflightRunner: "scripts/check_release_preflight.mjs",
+  vercelPreviewDeployRunner: "scripts/deploy_vercel_preview.mjs",
   supabasePrereqRunner: "scripts/check_local_supabase_prereqs.mjs",
   supabaseRunner: "scripts/run_supabase_smoke.mjs",
   productionRunner: "scripts/run_production_dry_run.mjs",
   previewRunner: "scripts/capture_desktop_previews.mjs",
   previewManifestValidator: "scripts/validate_release_preview_manifest.mjs",
   protectedAdminPlaywrightConfig: "playwright.admin.config.ts",
+  vercelConfig: "vercel.json",
+  vercelPreviewConfig: "vercel.preview.json",
+  vercelProductionConfig: "vercel.production.json",
   supabaseConfig: "supabase/config.toml",
   setupGuide: "docs/setup-deploy.md",
   testingGuide: "docs/testing-strategy.md",
@@ -25,12 +29,16 @@ function readProjectFile(path) {
 const packageJson = JSON.parse(readProjectFile(files.packageJson));
 const envExample = readProjectFile(files.envExample);
 const releasePreflightRunner = readProjectFile(files.releasePreflightRunner);
+const vercelPreviewDeployRunner = readProjectFile(files.vercelPreviewDeployRunner);
 const supabasePrereqRunner = readProjectFile(files.supabasePrereqRunner);
 const supabaseRunner = readProjectFile(files.supabaseRunner);
 const productionRunner = readProjectFile(files.productionRunner);
 const previewRunner = readProjectFile(files.previewRunner);
 const previewManifestValidator = readProjectFile(files.previewManifestValidator);
 const protectedAdminPlaywrightConfig = readProjectFile(files.protectedAdminPlaywrightConfig);
+const vercelConfig = readProjectFile(files.vercelConfig);
+const vercelPreviewConfig = readProjectFile(files.vercelPreviewConfig);
+const vercelProductionConfig = readProjectFile(files.vercelProductionConfig);
 const supabaseConfig = readProjectFile(files.supabaseConfig);
 const setupGuide = readProjectFile(files.setupGuide);
 const testingGuide = readProjectFile(files.testingGuide);
@@ -47,12 +55,16 @@ function expectContains(label, value, needle) {
 
 for (const path of [
   files.releasePreflightRunner,
+  files.vercelPreviewDeployRunner,
   files.supabasePrereqRunner,
   files.supabaseRunner,
   files.productionRunner,
   files.previewRunner,
   files.previewManifestValidator,
   files.protectedAdminPlaywrightConfig,
+  files.vercelConfig,
+  files.vercelPreviewConfig,
+  files.vercelProductionConfig,
   files.supabaseConfig,
 	  "supabase/smoke/0001_manual_correction_rpc.sql",
 	  "supabase/migrations/0002_creator_channel_registry_rpc.sql",
@@ -101,6 +113,11 @@ expect(
   "scripts.verify:release-previews"
 );
 expect(
+  "package exposes Vercel Hobby preview deploy",
+  packageJson.scripts?.["deploy:vercel-preview"] === "node scripts/deploy_vercel_preview.mjs",
+  "scripts.deploy:vercel-preview"
+);
+expect(
   "package exposes release smoke validator",
   packageJson.scripts?.["verify:release-smoke"] === "node scripts/validate_release_smoke_scripts.mjs",
   "scripts.verify:release-smoke"
@@ -147,9 +164,13 @@ expect(
 
 expectContains("release preflight imports production config validator", releasePreflightRunner, "validateProductionConfig");
 expectContains("release preflight checks Supabase CLI", releasePreflightRunner, '"Supabase CLI"');
+expectContains("release preflight requires Vercel preview deploy runner", releasePreflightRunner, "scripts/deploy_vercel_preview.mjs");
 expectContains("release preflight checks Docker daemon", releasePreflightRunner, '"Docker daemon"');
 expectContains("release preflight checks psql", releasePreflightRunner, '"PostgreSQL client psql"');
 expectContains("release preflight checks Vercel Cron", releasePreflightRunner, "Vercel Cron route");
+expectContains("release preflight checks production Vercel config", releasePreflightRunner, "vercel.production.json");
+expectContains("release preflight checks root Vercel config omits Cron", releasePreflightRunner, "Vercel root deploy config omits Cron");
+expectContains("release preflight checks Vercel Hobby preview config", releasePreflightRunner, "Vercel Hobby preview config omits Cron");
 expectContains("release preflight checks release previews", releasePreflightRunner, "validate_release_preview_manifest.mjs");
 expectContains("release preflight checks pinned pnpm", releasePreflightRunner, "pnpm matches packageManager");
 expectContains("release preflight supports strict production", releasePreflightRunner, "--strict-production");
@@ -215,6 +236,32 @@ expect(
   !/service_role|anon_key|jwt_secret|password\s*=|secret\s*=/iu.test(supabaseConfig),
   "no service_role, anon_key, jwt_secret, password, or secret literals"
 );
+expect(
+  "Vercel root config omits crons",
+  !vercelConfig.includes('"crons"'),
+  "vercel.json must not define crons"
+);
+expectContains("Vercel preview deploy runner uses preview config", vercelPreviewDeployRunner, "vercel.preview.json");
+expectContains("Vercel preview deploy runner publishes public demo", vercelPreviewDeployRunner, '"--prod"');
+expectContains("Vercel preview deploy runner sets demo build env", vercelPreviewDeployRunner, "NEXT_PUBLIC_DEMO_MODE=true");
+expectContains("Vercel preview deploy runner protects Admin", vercelPreviewDeployRunner, "ADMIN_JOB_TOKEN");
+expectContains("Vercel preview deploy runner avoids printing generated token", vercelPreviewDeployRunner, "the token is not printed");
+expect(
+  "Vercel Hobby preview config omits crons",
+  !vercelPreviewConfig.includes('"crons"'),
+  "vercel.preview.json must not define crons"
+);
+expectContains("Vercel production config keeps ingest cron", vercelProductionConfig, '"path": "/api/jobs/ingest"');
+expectContains("Vercel production config keeps alert cron", vercelProductionConfig, '"path": "/api/jobs/alerts"');
+expectContains("Vercel production config keeps retention cron", vercelProductionConfig, '"path": "/api/jobs/retention"');
+expectContains("Vercel production config keeps frequent ingest cadence", vercelProductionConfig, '"schedule": "*/30 * * * *"');
+expectContains("Vercel production config keeps frequent alert cadence", vercelProductionConfig, '"schedule": "*/10 * * * *"');
+expectContains("setup guide documents Vercel Hobby preview", setupGuide, "pnpm deploy:vercel-preview");
+expectContains("testing guide documents Vercel Hobby preview", testingGuide, "pnpm deploy:vercel-preview");
+expectContains("readme documents Vercel Hobby preview", readme, "pnpm deploy:vercel-preview");
+expectContains("setup guide documents production Vercel config", setupGuide, "vercel.production.json");
+expectContains("testing guide documents production Vercel config", testingGuide, "vercel.production.json");
+expectContains("readme documents production Vercel config", readme, "vercel.production.json");
 
 for (const endpoint of [
 	  "/api/streams",

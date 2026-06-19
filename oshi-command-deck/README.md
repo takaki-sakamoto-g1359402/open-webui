@@ -62,6 +62,7 @@ pnpm verify:pwa
 pnpm verify:trust
 pnpm verify:policy-review
 pnpm verify:readiness
+pnpm deploy:vercel-preview
 pnpm verify:production-config
 pnpm verify:rls
 pnpm verify:supabase
@@ -99,7 +100,8 @@ pnpm verify
 - `pnpm verify:production-config -- --strict-production --env-file .env.production.local` checks the release env profile before public launch: public and server demo mode off, `STREAMS_READ_SOURCE=supabase`, contact channel, distinct strong admin token and Vercel `CRON_SECRET`, Supabase credentials, `RATE_LIMIT_BACKEND=supabase` plus `RATE_LIMIT_KEY_SALT` or `HOST_RATE_LIMIT_CONFIGURED=true`, provider registries, optional Push, and optional AI fallback.
 - `pnpm verify:rls` fails if a public table lacks RLS, a public view loses `security_invoker`, unsafe columns are granted to `anon`/`authenticated`, admin helper RPCs become callable by anonymous users, or the manual correction/source retention/API rate-limit RPCs stop being service-role only.
 - `pnpm verify:release-smoke` keeps staging smoke, production dry-run, protected Admin E2E, release preview capture, runtime security-header smoke, and runtime 429 rate-limit probing wired to package scripts and docs without requiring an external database or running server during the static validator.
-- `pnpm check:release-preflight -- --strict-production --env-file .env.production.local` is the release operator gate that combines repo files, Node/Corepack/pnpm, Supabase CLI/Docker/psql, Vercel cron definitions, strict production env validation, and release preview evidence. It is intentionally not part of `pnpm verify` because it depends on external tooling and real deployment values.
+- `pnpm deploy:vercel-preview` deploys a public DEMO-mode Vercel URL with `vercel.preview.json`, which intentionally omits Cron so Hobby accounts can host a user-test URL. The runner deploys with a protected Admin token, generating one without printing it when none is provided. Keep production Cron readiness in `vercel.production.json`.
+- `pnpm check:release-preflight -- --strict-production --env-file .env.production.local` is the release operator gate that combines repo files, Node/Corepack/pnpm, Supabase CLI/Docker/psql, production Vercel cron definitions from `vercel.production.json`, strict production env validation, and release preview evidence. It is intentionally not part of `pnpm verify` because it depends on external tooling and real deployment values.
 - `pnpm check:supabase-local` checks whether the Supabase CLI, Docker runtime, `psql`, `supabase/config.toml`, migrations, seed, and smoke SQL are present before attempting local `supabase start` or `supabase db reset`.
 - `SUPABASE_DB_URL=postgresql://... pnpm smoke:supabase` runs rollback-only SQL against a migrated staging database through `psql`; keep the DB URL server-only/local-only.
 - `ADMIN_JOB_TOKEN=... CRON_SECRET=... pnpm smoke:production-dry-run -- --strict` checks public reads, dry-run ingestion, unauthenticated `persist=1`/job/admin rejection, authenticated Admin read APIs, non-writing admin payload validation, authenticated ingest/alert/retention dry-runs through both manual admin and Vercel cron bearer paths, cron-token isolation from Admin APIs, runtime security headers, a real `Retry-After`/`RateLimit-Policy`/`RateLimit-Backend` 429 probe, and a running production build or staging URL without protected writes. Add `--start-server` after `pnpm build` for local smoke runs when the selected `--base-url` is not already serving the app, and add `--expect-read-source supabase` once production public reads are configured.
@@ -125,6 +127,7 @@ Operational review notes live in `docs/policy-review.md`, and the release proof 
 - <https://datatracker.ietf.org/doc/html/draft-ietf-httpapi-ratelimit-headers>
 - <https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/429>
 - <https://vercel.com/docs/vercel-firewall/vercel-waf/rate-limiting>
+- <https://vercel.com/docs/cron-jobs/usage-and-pricing>
 - <https://nextjs.org/docs/app/api-reference/config/next-config-js/headers>
 - <https://nextjs.org/docs/pages/guides/environment-variables>
 - <https://www.w3.org/TR/service-workers/>
