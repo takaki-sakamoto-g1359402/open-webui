@@ -1,0 +1,16 @@
+{
+  "crons": [
+    {
+      "path": "/api/jobs/ingest",
+      "schedule": "*/30 * * * *"
+    },
+    {
+      "path": "/api/jobs/alerts",
+      "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/jobs/retention",
+      "schedule": "15 3 * * *"
+    }
+  ]
+}

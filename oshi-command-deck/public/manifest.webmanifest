@@ -1,0 +1,79 @@
+{
+  "name": "Oshi Command Deck",
+  "short_name": "Command Deck",
+  "description": "Unofficial mobile-first livestream mission control dashboard.",
+  "name_localized": {
+    "ja": "Oshi Command Deck"
+  },
+  "short_name_localized": {
+    "ja": "Command Deck"
+  },
+  "description_localized": {
+    "ja": "非公式のモバイル優先ライブ配信コマンドデッキ。"
+  },
+  "id": "/?source=pwa",
+  "lang": "en",
+  "dir": "ltr",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f8fafc",
+  "theme_color": "#047c9e",
+  "categories": ["entertainment", "utilities", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Today",
+      "name_localized": {
+        "ja": "今日"
+      },
+      "url": "/",
+      "description": "Open today's livestream deck",
+      "description_localized": {
+        "ja": "今日のライブ配信デッキを開く"
+      }
+    },
+    {
+      "name": "Watch Route",
+      "name_localized": {
+        "ja": "視聴ルート"
+      },
+      "url": "/route",
+      "description": "Open explainable recommendations",
+      "description_localized": {
+        "ja": "説明可能なおすすめを開く"
+      }
+    },
+    {
+      "name": "Minecraft",
+      "name_localized": {
+        "ja": "Minecraft"
+      },
+      "url": "/minecraft",
+      "description": "Open Minecraft POV sessions",
+      "description_localized": {
+        "ja": "Minecraft POV セッションを開く"
+      }
+    }
+  ]
+}
