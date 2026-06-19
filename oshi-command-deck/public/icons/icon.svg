@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Oshi Command Deck icon">
+  <rect width="512" height="512" rx="96" fill="#f8fafc"/>
+  <rect x="72" y="90" width="368" height="332" rx="42" fill="#ffffff" stroke="#047c9e" stroke-width="22"/>
+  <path d="M118 173h276M118 256h276M118 339h188" stroke="#17202a" stroke-width="28" stroke-linecap="round"/>
+  <circle cx="374" cy="339" r="34" fill="#b42318"/>
+  <path d="M167 96v70M345 96v70" stroke="#047c9e" stroke-width="28" stroke-linecap="round"/>
+</svg>

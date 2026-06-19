@@ -1,0 +1,80 @@
+[
+  {
+    "id": "kuzuha",
+    "displayName": "Kuzuha",
+    "branch": "jp",
+    "languages": ["ja"],
+    "tags": ["game", "collaboration"],
+    "providerIds": {
+      "youtubeChannelId": "DEMO_YT_KUZUHA",
+      "xHandle": "DEMO_X_KUZUHA",
+      "manualSlug": "kuzuha"
+    },
+    "confidence": 0.84,
+    "active": true
+  },
+  {
+    "id": "tsukino-mito",
+    "displayName": "Tsukino Mito",
+    "branch": "jp",
+    "languages": ["ja"],
+    "tags": ["chat", "event"],
+    "providerIds": {
+      "youtubeChannelId": "DEMO_YT_MITO",
+      "xHandle": "DEMO_X_MITO",
+      "manualSlug": "tsukino-mito"
+    },
+    "confidence": 0.82,
+    "active": true
+  },
+  {
+    "id": "elira-pendora",
+    "displayName": "Elira Pendora",
+    "branch": "en",
+    "languages": ["en", "ja"],
+    "tags": ["game", "music"],
+    "providerIds": {
+      "youtubeChannelId": "DEMO_YT_ELIRA",
+      "xHandle": "DEMO_X_ELIRA",
+      "manualSlug": "elira-pendora"
+    },
+    "confidence": 0.8,
+    "active": true
+  },
+  {
+    "id": "pomu-rainpuff-archive",
+    "displayName": "Pomu Rainpuff Archive",
+    "branch": "en",
+    "languages": ["en"],
+    "tags": ["archive"],
+    "providerIds": {
+      "manualSlug": "pomu-rainpuff-archive"
+    },
+    "confidence": 0.55,
+    "active": false
+  },
+  {
+    "id": "selen-tatsuki-archive",
+    "displayName": "Selen Tatsuki Archive",
+    "branch": "en",
+    "languages": ["en"],
+    "tags": ["archive"],
+    "providerIds": {
+      "manualSlug": "selen-tatsuki-archive"
+    },
+    "confidence": 0.55,
+    "active": false
+  },
+  {
+    "id": "demo-manual-pov",
+    "displayName": "Manual POV",
+    "branch": "future",
+    "languages": ["ja", "en"],
+    "tags": ["minecraft", "manual"],
+    "providerIds": {
+      "manualSlug": "demo-manual-pov"
+    },
+    "confidence": 0.62,
+    "active": true
+  }
+]

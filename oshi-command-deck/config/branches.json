@@ -1,0 +1,37 @@
+[
+  {
+    "id": "jp",
+    "label": "NIJISANJI JP",
+    "localeHints": ["ja-JP", "ja"],
+    "coverage": "demo",
+    "notes": "Demo registry entries only. Production coverage requires explicit admin channel configuration."
+  },
+  {
+    "id": "en",
+    "label": "NIJISANJI EN",
+    "localeHints": ["en-US", "en-GB", "en"],
+    "coverage": "demo",
+    "notes": "Demo registry entries only. Production coverage requires explicit admin channel configuration."
+  },
+  {
+    "id": "id",
+    "label": "NIJISANJI ID",
+    "localeHints": ["id-ID", "id"],
+    "coverage": "manual_only",
+    "notes": "Legacy/merged branch reference. Add active provider IDs only when source ownership is verified."
+  },
+  {
+    "id": "kr",
+    "label": "NIJISANJI KR",
+    "localeHints": ["ko-KR", "ko"],
+    "coverage": "manual_only",
+    "notes": "Legacy/merged branch reference. Add active provider IDs only when source ownership is verified."
+  },
+  {
+    "id": "future",
+    "label": "Future sources",
+    "localeHints": [],
+    "coverage": "future",
+    "notes": "Reserved for additional official APIs, admin-imported providers, or branch taxonomy changes."
+  }
+]
