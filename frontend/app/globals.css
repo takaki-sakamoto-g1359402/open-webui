@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 33% 98%;
+    --foreground: 224 48% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 48% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 48% 12%;
+    --primary: 219 83% 28%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 43% 94%;
+    --secondary-foreground: 223 45% 20%;
+    --muted: 211 32% 92%;
+    --muted-foreground: 218 15% 42%;
+    --accent: 188 56% 41%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 68% 43%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 28% 86%;
+    --input: 214 28% 86%;
+    --ring: 219 83% 36%;
+    --radius: 0.5rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply bg-background;
+  }
+
+  body {
+    @apply min-w-80 bg-background text-foreground antialiased;
+    font-family:
+      ui-sans-serif,
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      sans-serif;
+    letter-spacing: 0;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  a {
+    @apply text-inherit no-underline;
+  }
+
+  ::selection {
+    @apply bg-primary text-primary-foreground;
+  }
+}
+
+@layer components {
+  .rail-grid {
+    background-image:
+      linear-gradient(hsl(var(--border) / 0.45) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border) / 0.45) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+}
